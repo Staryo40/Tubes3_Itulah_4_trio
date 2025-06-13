@@ -1,3 +1,54 @@
-{
-    
-}
+[
+    {
+        "name": "Alice",
+        "matches": 4,
+        "matches_keywords": [
+            {
+                "keyword" : "React",
+                "occurrences": 2
+            },
+            {
+                "keyword": "JavaScript",
+                "occurrences": 1
+            },
+            {
+                "keyword": "CSS",
+                "occurrences": 2
+            }
+        ],
+        "summary_path" : "path/to/summary_alice.json",
+        "view_path" : "path/to/view_alice.json"
+    },
+    {
+        "name": "Bob",
+        "matches": 3,
+        "matches_keywords": [
+            {
+                "keyword" : "Python",
+                "occurrences": 1
+            },
+            {
+                "keyword": "C++",
+                "occurrences": 2
+            }
+        ],
+        "summary_path" : "path/to/summary_bob.json",
+        "view_path" : "path/to/view_bob.json"
+    },
+    {
+        "name": "Charlie",
+        "matches": 5,
+        "matches_keywords": [
+            {
+                "keyword" : "Java",
+                "occurrences": 3
+            },
+            {
+                "keyword": "SQL",
+                "occurrences": 2
+            }
+        ],
+        "summary_path" : "path/to/summary_charlie.json",
+        "view_path" : "path/to/view_charlie.json"
+    }
+]

@@ -2,11 +2,10 @@ import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLineEdit, QPushButton, QLabel,
     QRadioButton, QButtonGroup, QHBoxLayout, QMainWindow, QSpinBox,
-    QGridLayout, QScrollArea
+    QGridLayout, QScrollArea, QFrame, QSlider
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap
-
+from PyQt5.QtGui import QPixmap, QFont
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -23,169 +22,288 @@ class MainWindow(QMainWindow):
         layout.setAlignment(self.image_label, Qt.AlignCenter)
 
     def setSearchBar(self, layout):
-        self.search_layout = QVBoxLayout()
-        self.search_layout.setSpacing(0)
-
+        # Keywords label
         self.search_label = QLabel("Keywords:", self)
-        self.search_label.setFixedHeight(40)
         self.search_label.setStyleSheet("""
             QLabel {
                 font-size: 16px;
                 font-weight: bold;
-                color: #000000;
-                padding: 0px 0px;
-                margin: 0px 0px;
+                color: #333333;
+                margin-bottom: 5px;
             }
         """)
+        layout.addWidget(self.search_label)
+        
+        # Modern search input
         self.search_bar = QLineEdit(self)
-        self.search_bar.setPlaceholderText("e.g. React, Python, Java")
+        self.search_bar.setPlaceholderText("React, Express, HTML")
         self.search_bar.textChanged.connect(self.on_search)
-        self.search_bar.setMaximumWidth(300)
         self.search_bar.setStyleSheet("""
             QLineEdit {
-                border: 2px solid #C5CFD1;
-                border-radius: 12px;
-                padding: 8px 15px;
-                background-color: #C5CFD1;
-                font-size: 16px;
+                border: none;
+                border-radius: 15px;
+                padding: 12px 15px;
+                background-color: #f0f0f0;
+                font-size: 14px;
+                margin-bottom: 20px;
             }
         """)
-        self.search_layout.addWidget(self.search_label)
-        self.search_layout.addWidget(self.search_bar)
-        layout.addLayout(self.search_layout)
+        layout.addWidget(self.search_bar)
 
     def setAlgorithmOptions(self, layout):
-        self.option_label = QLabel("Select Algorithm:", self)
-        self.option_label.setFixedHeight(40)
+        # Algorithm label
+        self.option_label = QLabel("Search Algorithm:", self)
         self.option_label.setStyleSheet("""
             QLabel {
                 font-size: 16px;
                 font-weight: bold;
-                color: #000000;
-                padding: 0px 0px;
-                margin: 0px 0px;
+                color: #333333;
+                margin-bottom: 5px;
             }
         """)
-        self.kmp_option = QRadioButton("KMP (Knuth-Morris-Pratt)")
-        self.kmp_option.setChecked(True)
-        self.kmp_option.setStyleSheet("""
-            QRadioButton {
-                font-size: 14px;
-                color: #000;
-            }
-        """)
-        self.bm_option = QRadioButton("BM (Boyer-Moore)")
-        self.bm_option.setStyleSheet("""
-            QRadioButton {
-                font-size: 14px;
-                color: #000;
-            }
-        """)
-        self.button_group = QButtonGroup()
-        self.button_group.addButton(self.kmp_option)
-        self.button_group.addButton(self.bm_option)
-        self.confirm_button = QPushButton("Confirm Selection")
-        self.confirm_button.setStyleSheet("""
-            QPushButton {
-                background-color: #4CAF50;
-                color: white;
-                border-radius: 10px;
-                font-size: 14px;
-                padding: 8px 15px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-        """)
-        self.confirm_button.clicked.connect(self.confirm_selection)
-        self.selection_layout = QVBoxLayout()
-        self.selection_layout.addWidget(self.kmp_option)
-        self.selection_layout.addWidget(self.bm_option)
-        self.selection_layout.setSpacing(20)
         layout.addWidget(self.option_label)
-        layout.addLayout(self.selection_layout)
+        
+        # Create toggle container
+        toggle_container = QFrame()
+        toggle_container.setStyleSheet("""
+            QFrame {
+                background-color: #f0f0f0;
+                border-radius: 15px;
+                padding: 5px;
+            }
+        """)
+        toggle_layout = QHBoxLayout(toggle_container)
+        toggle_layout.setContentsMargins(10, 5, 10, 5)
+        toggle_layout.setSpacing(5)
+        
+        # KMP label
+        self.kmp_label = QLabel("KMP")
+        self.kmp_label.setStyleSheet("""
+            QLabel {
+                font-size: 14px;
+                font-weight: bold;
+                color: #333333;
+            }
+        """)
+        toggle_layout.addWidget(self.kmp_label)
+        
+        # Custom toggle switch
+        self.algorithm_toggle = QFrame()
+        self.algorithm_toggle.setFixedSize(60, 30)
+        self.algorithm_toggle.setStyleSheet("""
+            QFrame {
+                background-color: #cccccc;
+                border-radius: 15px;
+                border: none;
+            }
+        """)
+        
+        # Toggle button (slider)
+        self.toggle_button = QFrame(self.algorithm_toggle)
+        self.toggle_button.setFixedSize(26, 26)
+        self.toggle_button.move(2, 2)  # Position for KMP (left)
+        self.toggle_button.setStyleSheet("""
+            QFrame {
+                background-color: white;
+                border-radius: 13px;
+                border: none;
+            }
+        """)
+        
+        # Variable to track toggle state (True = KMP, False = BM)
+        self.toggle_state = True
+        
+        # Make toggle clickable
+        self.algorithm_toggle.mousePressEvent = self.toggle_algorithm
+        toggle_layout.addWidget(self.algorithm_toggle)
+        
+        # BM label
+        self.bm_label = QLabel("BM")
+        self.bm_label.setStyleSheet("""
+            QLabel {
+                font-size: 14px;
+                font-weight: bold;
+                color: #333333;
+            }
+        """)
+        toggle_layout.addWidget(self.bm_label)
+        
+        # Add toggle container to layout
+        layout.addWidget(toggle_container)
+        
+        # Add spacing
+        spacer = QWidget()
+        spacer.setFixedHeight(20)
+        layout.addWidget(spacer)
+
+    def toggle_algorithm(self, event):
+        # Toggle the state
+        self.toggle_state = not self.toggle_state
+        
+        # Update toggle button position
+        if self.toggle_state:  # KMP
+            self.toggle_button.move(2, 2)
+            self.algorithm_toggle.setStyleSheet("""
+                QFrame {
+                    background-color: #cccccc;
+                    border-radius: 15px;
+                    border: none;
+                }
+            """)
+            print("KMP algorithm selected")
+        else:  # BM
+            self.toggle_button.move(32, 2)
+            self.algorithm_toggle.setStyleSheet("""
+                QFrame {
+                    background-color: #a0a0a0;
+                    border-radius: 15px;
+                    border: none;
+                }
+            """)
+            print("BM algorithm selected")
 
     def set_top_match_option(self, layout):
-        container = QWidget()
-        container_layout = QVBoxLayout(container)
-        container_layout.setContentsMargins(0, 0, 0, 50)
-        container_layout.setSpacing(0)
-
+        # Top Matches label
         self.count_label = QLabel("Top Matches:")
-        self.count_label.setFixedHeight(40)
         self.count_label.setStyleSheet("""
             QLabel {
                 font-size: 16px;
                 font-weight: bold;
-                color: #000000;
-                padding: 0px 0px;
-                margin: 0px 0px;
+                color: #333333;
+                margin-bottom: 5px;
             }
         """)
-        container_layout.addWidget(self.count_label)
+        layout.addWidget(self.count_label)
 
+        # Modern number input
         self.spin_box = QSpinBox()
-        self.spin_box.setMinimum(0)
+        self.spin_box.setMinimum(1)
         self.spin_box.setMaximum(100)
-        self.spin_box.setValue(1)
+        self.spin_box.setValue(3)
         self.spin_box.setStyleSheet("""
             QSpinBox {
-                background-color: #C5CFD1;
-                border: 1px solid #888888;
-                border-radius: 8px;
-                padding: 2px 5px;
+                background-color: #f0f0f0;
+                border: none;
+                border-radius: 15px;
+                padding: 10px 15px;
                 font-size: 14px;
+                margin-bottom: 20px;
             }
             QSpinBox::up-button, QSpinBox::down-button {
-                subcontrol-origin: border;
-                subcontrol-position: top right;
                 width: 20px;
-                border-left: 1px solid #888888;
-                background-color: #b0b0b0;
-                border-radius: 0 8px 0 0;
+                border: none;
+                background-color: transparent;
             }
-            QSpinBox::down-button {
-                subcontrol-position: bottom right;
-                border-radius: 0 0 8px 0;
+            QSpinBox::up-arrow {
+                image: url(../img/up_arrow.png);
+                width: 10px;
+                height: 10px;
+            }
+            QSpinBox::down-arrow {
+                image: url(../img/down_arrow.png);
+                width: 10px;
+                height: 10px;
             }
         """)
-        container_layout.addWidget(self.spin_box)
-
-        layout.addWidget(container)
+        layout.addWidget(self.spin_box)
 
     def setSearchButton(self, layout):
+        # Modern search button
         self.search_button = QPushButton("Search")
         self.search_button.setStyleSheet("""
             QPushButton {
-                background-color: #A0A9AD;
-                color: black;
+                background-color: #808080;
+                color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 10px 20px;
+                border-radius: 15px;
+                padding: 12px 20px;
                 font-size: 16px;
                 font-weight: bold;
+                margin-top: 10px;
             }
             QPushButton:hover {
-                background-color: #8B9194;
+                background-color: #707070;
             }
             QPushButton:pressed {
-                background-color: #6C7376;
+                background-color: #606060;
             }
         """)
         self.search_button.clicked.connect(self.do_search)
         layout.addWidget(self.search_button)
 
     def do_search(self):
-        self.main_area.setText("Search button clicked! Menampilkan hasil...")
+        # Load sample data for demonstration
+        self.load_candidate_data()
+        self.update_cards()
 
     def on_search(self, text):
-        self.main_area.setText(f"Searching for: {text}")
+        pass
 
-    def confirm_selection(self):
-        if self.kmp_option.isChecked():
-            print("KMP (Knuth-Morris-Pratt) selected.")
-        elif self.bm_option.isChecked():
-            print("BM (Boyer-Moore) selected.")
+    def load_candidate_data(self):
+        # Sample data that matches the structure provided
+        self.candidates_data = [
+            {
+                "name": "Farhan",
+                "matches": 4,
+                "matches_keywords": [
+                    {"keyword": "React", "occurrences": 1},
+                    {"keyword": "Express", "occurrences": 2},
+                    {"keyword": "HTML", "occurrences": 1}
+                ],
+                "summary_path": "path/to/summary_farhan.json",
+                "view_path": "path/to/view_farhan.json"
+            },
+            {
+                "name": "Aland",
+                "matches": 1,
+                "matches_keywords": [
+                    {"keyword": "React", "occurrences": 1}
+                ],
+                "summary_path": "path/to/summary_aland.json",
+                "view_path": "path/to/view_aland.json"
+            },
+            {
+                "name": "Ariel",
+                "matches": 1,
+                "matches_keywords": [
+                    {"keyword": "Express", "occurrences": 1}
+                ],
+                "summary_path": "path/to/summary_ariel.json",
+                "view_path": "path/to/view_ariel.json"
+            },
+            # Add more sample data to test pagination
+            {
+                "name": "Alice",
+                "matches": 4,
+                "matches_keywords": [
+                    {"keyword": "React", "occurrences": 2},
+                    {"keyword": "JavaScript", "occurrences": 1},
+                    {"keyword": "CSS", "occurrences": 2}
+                ],
+                "summary_path": "path/to/summary_alice.json",
+                "view_path": "path/to/view_alice.json"
+            },
+            {
+                "name": "Bob",
+                "matches": 3,
+                "matches_keywords": [
+                    {"keyword": "Python", "occurrences": 1},
+                    {"keyword": "C++", "occurrences": 2}
+                ],
+                "summary_path": "path/to/summary_bob.json",
+                "view_path": "path/to/view_bob.json"
+            },
+            {
+                "name": "Charlie",
+                "matches": 5,
+                "matches_keywords": [
+                    {"keyword": "Java", "occurrences": 3},
+                    {"keyword": "SQL", "occurrences": 2}
+                ],
+                "summary_path": "path/to/summary_charlie.json",
+                "view_path": "path/to/view_charlie.json"
+            }
+        ]
 
     def initUI(self):
         self.central_widget = QWidget()
@@ -195,19 +313,22 @@ class MainWindow(QMainWindow):
         self.left_panel = QWidget()
         self.left_panel.setStyleSheet("""
             QWidget {
-                background-color: #e8e7e3;
-                border-right: 1px solid #d3d3d3;
+                background-color: white;
+                border-right: 1px solid #e0e0e0;
             }
         """)
         self.left_panel_layout = QVBoxLayout(self.left_panel)
-        self.left_panel_layout.setContentsMargins(10, 10, 10, 10)
-        self.left_panel_layout.setSpacing(10)
+        self.left_panel_layout.setContentsMargins(20, 20, 20, 20)
+        self.left_panel_layout.setSpacing(15)
 
         self.setAppLogo(self.left_panel_layout)
         self.setSearchBar(self.left_panel_layout)
         self.setAlgorithmOptions(self.left_panel_layout)
         self.set_top_match_option(self.left_panel_layout)
         self.setSearchButton(self.left_panel_layout)
+        
+        # Add stretch to push everything to the top
+        self.left_panel_layout.addStretch()
 
         # Result widget with cards and pagination
         self.main_area = QWidget()
@@ -243,154 +364,149 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("CVSearch")
         self.setGeometry(100, 100, 800, 600)
 
-        # Contoh data card (50 card)
-        self.cards_data = [f"Card content #{i + 1}" for i in range(50)]
-
+        # Initialize with sample data
+        self.load_candidate_data()
+        
         self.current_page = 0
-        self.cards_per_page = 6  # 3 cols x 6 rows
+        self.cards_per_page = 6  # 3 cols x 2 rows
 
         self.update_cards()
 
-    # def create_card(self, text):
-    #     card = QWidget()
-    #     card.setStyleSheet("""
-    #         QWidget {
-    #             background-color: #f0f0f0;
-    #             border: 1px solid #ccc;
-    #             border-radius: 8px;
-    #         }
-    #     """)
-    #     card_layout = QVBoxLayout(card)
-    #     card_layout.setContentsMargins(10, 10, 10, 10)
-    #     card_layout.setAlignment(Qt.AlignCenter)
-
-    #     label = QLabel(text)
-    #     label.setWordWrap(True)
-    #     label.setAlignment(Qt.AlignCenter)
-    #     label.setStyleSheet("font-size: 14px; color: #333;")
-    #     card_layout.addWidget(label)
-
-    #     card.setFixedSize(250, 200)
-    #     return card
-
-    def create_card(self, header_text, description_text):
-        card = QWidget()
+    def create_card(self, candidate_data):
+        # Create a card frame with light gray background and rounded corners
+        card = QFrame()
+        card.setFrameShape(QFrame.StyledPanel)
         card.setStyleSheet("""
-            QWidget {
-                background-color: #ffffff;
-                border: 1px solid #e0e0e0;
-                border-radius: 12px;
-                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            QFrame {
+                background-color: #e6e6e6;
+                border-radius: 10px;
+                padding: 10px;
             }
         """)
+        
+        # Main layout for the card
         card_layout = QVBoxLayout(card)
         card_layout.setContentsMargins(15, 15, 15, 15)
         card_layout.setSpacing(10)
-
-        # Header
-        header = QLabel(header_text)
-        header.setStyleSheet("""
-            QLabel {
-                font-size: 18px;
-                font-weight: bold;
-                color: #222;
-            }
-        """)
-        header.setAlignment(Qt.AlignCenter)
-        card_layout.addWidget(header)
-
-        # Description
-        description = QLabel(description_text)
-        description.setWordWrap(True)
-        description.setAlignment(Qt.AlignCenter)
-        description.setStyleSheet("""
-            QLabel {
-                font-size: 14px;
-                color: #555;
-            }
-        """)
-        card_layout.addWidget(description)
-
-        # Button Container
-        button_container = QWidget()
-        button_layout = QHBoxLayout(button_container)
-        button_layout.setSpacing(10)
-        button_layout.setContentsMargins(0, 0, 0, 0)
-
-        # Summary Button
-        summary_button = QPushButton("Summary")
-        summary_button.setStyleSheet("""
+        
+        # Header layout (name and matches)
+        header_layout = QHBoxLayout()
+        
+        # Name label
+        name_label = QLabel(candidate_data["name"])
+        name_font = QFont()
+        name_font.setBold(True)
+        name_font.setPointSize(12)
+        name_label.setFont(name_font)
+        
+        # Matches label
+        matches_text = f"{candidate_data['matches']} match"
+        if candidate_data['matches'] != 1:
+            matches_text += "es"
+        matches_label = QLabel(matches_text)
+        matches_label.setAlignment(Qt.AlignRight)
+        
+        header_layout.addWidget(name_label)
+        header_layout.addWidget(matches_label)
+        card_layout.addLayout(header_layout)
+        
+        # Matched keywords section
+        keywords_label = QLabel("Matched keywords:")
+        card_layout.addWidget(keywords_label)
+        
+        # List of keywords
+        keywords_layout = QVBoxLayout()
+        keywords_layout.setContentsMargins(10, 0, 0, 0)
+        
+        for i, keyword_data in enumerate(candidate_data["matches_keywords"]):
+            keyword = keyword_data["keyword"]
+            occurrences = keyword_data["occurrences"]
+            
+            keyword_text = f"{i+1}. {keyword}: {occurrences} "
+            keyword_text += "occurrence" if occurrences == 1 else "occurrences"
+            
+            keyword_label = QLabel(keyword_text)
+            keywords_layout.addWidget(keyword_label)
+        
+        card_layout.addLayout(keywords_layout)
+        
+        # Add stretch to push buttons to the bottom
+        card_layout.addStretch()
+        
+        # Buttons layout
+        buttons_layout = QHBoxLayout()
+        buttons_layout.setSpacing(10)
+        
+        summary_btn = QPushButton("Summary")
+        summary_btn.setStyleSheet("""
             QPushButton {
-                background-color: #007BFF;
+                background-color: #a0a0a0;
                 color: white;
+                border-radius: 5px;
+                padding: 5px 15px;
                 border: none;
-                border-radius: 6px;
-                font-size: 14px;
-                padding: 6px 12px;
             }
             QPushButton:hover {
-                background-color: #0056b3;
-            }
-            QPushButton:pressed {
-                background-color: #003f7f;
+                background-color: #808080;
             }
         """)
-        button_layout.addWidget(summary_button)
-
-        # View CV Button
-        view_button = QPushButton("View CV")
-        view_button.setStyleSheet("""
+        summary_btn.clicked.connect(lambda: self.open_summary(candidate_data["summary_path"]))
+        
+        view_cv_btn = QPushButton("View CV")
+        view_cv_btn.setStyleSheet("""
             QPushButton {
-                background-color: #28A745;
+                background-color: #a0a0a0;
                 color: white;
+                border-radius: 5px;
+                padding: 5px 15px;
                 border: none;
-                border-radius: 6px;
-                font-size: 14px;
-                padding: 6px 12px;
             }
             QPushButton:hover {
-                background-color: #218838;
-            }
-            QPushButton:pressed {
-                background-color: #1e7e34;
+                background-color: #808080;
             }
         """)
-        button_layout.addWidget(view_button)
-
-        card_layout.addWidget(button_container)
-
-        # Fix Card Size
-        card.setFixedSize(250, 250)
-
+        view_cv_btn.clicked.connect(lambda: self.open_cv(candidate_data["view_path"]))
+        
+        buttons_layout.addWidget(summary_btn)
+        buttons_layout.addWidget(view_cv_btn)
+        
+        card_layout.addLayout(buttons_layout)
+        
+        # Set fixed size for the card
+        card.setFixedSize(300, 200)
+        
         return card
-
+    
+    def open_summary(self, path):
+        print(f"Opening summary from: {path}")
+        
+    def open_cv(self, path):
+        print(f"Opening CV from: {path}")
 
     def update_cards(self):
         # Clear existing widgets in the cards layout
         while self.cards_layout.count():
-            widget = self.cards_layout.takeAt(0).widget()
+            item = self.cards_layout.takeAt(0)
+            widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
 
         # Calculate start and end indices for the current page
         start = self.current_page * self.cards_per_page
-        end = min(start + self.cards_per_page, len(self.cards_data))  # Prevent overflow
+        end = min(start + self.cards_per_page, len(self.candidates_data))  # Prevent overflow
 
         # Add cards for the current page
         cols = 3
-        for index, text in enumerate(self.cards_data[start:end]):
+        for index, candidate in enumerate(self.candidates_data[start:end]):
             row = index // cols
             col = index % cols
-            card = self.create_card(text, "ini nigga saya")  # Ensure create_card is implemented correctly
+            card = self.create_card(candidate)
             self.cards_layout.addWidget(card, row, col)
 
         # Update pagination buttons
         self.prev_button.setEnabled(self.current_page > 0)
-        max_page = (len(self.cards_data) + self.cards_per_page - 1) // self.cards_per_page - 1
+        max_page = (len(self.candidates_data) + self.cards_per_page - 1) // self.cards_per_page - 1
         self.next_button.setEnabled(self.current_page < max_page)
-
-
-
 
     def show_previous_page(self):
         if self.current_page > 0:
@@ -398,7 +514,7 @@ class MainWindow(QMainWindow):
             self.update_cards()
 
     def show_next_page(self):
-        max_page = (len(self.cards_data) - 1) // self.cards_per_page
+        max_page = (len(self.candidates_data) - 1) // self.cards_per_page
         if self.current_page < max_page:
             self.current_page += 1
             self.update_cards()
