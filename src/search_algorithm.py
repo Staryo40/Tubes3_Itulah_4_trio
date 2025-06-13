@@ -1,4 +1,5 @@
 from enum import Enum
+import re
 
 class matching_algorithm(Enum):
     KMP = 1
@@ -31,7 +32,7 @@ class search_algorithm:
             start = match_index + self.keyword_length 
 
         if not indices:
-            return self.text
+            return (0, self.text)
 
         result = ""
         last_index = 0
@@ -41,40 +42,52 @@ class search_algorithm:
             last_index = index + self.keyword_length
 
         result += self.text[last_index:]
-        return result
+        return (len(indices), result)
     
     def similar_search_result(self, threshold, method: levenshtein_method):
-        """Highlight all approximate matches (within threshold) using Levenshtein distance in orange."""
         result = ""
         last_index = 0
         start = 0
+        found = 0
 
         while start <= self.text_length - self.keyword_length:
-            if (method == levenshtein_method.WORD):
+            if method == levenshtein_method.WORD:
                 match_index = self.levenshtein_search_word(threshold, start)
-            elif (method == levenshtein_method.WINDOW):
+            elif method == levenshtein_method.WINDOW:
                 match_index = self.levenshtein_search_window(threshold, start)
-            if match_index == -1:
+            else:
                 break
 
-            # Add text before the match
+            if match_index == -1:
+                break
+            found += 1
+
+            if method == levenshtein_method.WORD:
+                word_match = re.match(r"[\w']+", self.text[match_index:])
+                if not word_match:
+                    break
+                matched_text = word_match.group()
+                match_end = match_index + len(matched_text)
+            elif method == levenshtein_method.WINDOW:
+                matched_text = self.text[match_index:match_index + self.keyword_length]
+                match_end = match_index + self.keyword_length
+
             result += self.text[last_index:match_index]
+            result += "\033[93m" + matched_text + "\033[0m" # yellow
+            last_index = match_end
 
-            # Highlight matched window in orange (color code: \033[93m)
-            match_text = self.text[match_index:match_index + self.keyword_length]
-            result += "\033[93m" + match_text + "\033[0m"
+            if method == levenshtein_method.WORD:
+                next_space = self.text.find(' ', match_end)
+                start = next_space + 1 if next_space != -1 else self.text_length
+            else:
+                start = last_index
 
-            # Update indices
-            last_index = match_index + self.keyword_length
-            start = last_index
-
-        # Add any remaining text
         result += self.text[last_index:]
-        return result
+        return (found, result)
 
     def boyer_moore_search(self, search_start=0):
         """Return index where pattern starts in text using Boyer-Moore bad character rule, or -1 if no match."""
-        last = self.build_last()
+        last = self.build_last_occur()
         n = self.text_length
         m = self.keyword_length
         i = search_start + m - 1  
@@ -92,17 +105,17 @@ class search_algorithm:
                     i -= 1
                     j -= 1
             else:
-                lo = last[ord(self.text[i])] if ord(self.text[i]) < 128 else -1
+                lo = last[self.text[i]] if self.text[i] in last else -1
                 i += m - min(j, 1 + lo)
                 j = m - 1
 
         return -1 
     
-    def build_last(self):
-        """Return array storing index of last occurrence of each ASCII char in pattern."""
-        last = [-1] * 128  
+    def build_last_occur(self):
+        """Return map storing of last occurrences of each ASCII char in pattern."""
+        last = {}
         for i in range(self.keyword_length):
-            last[ord(self.keyword[i])] = i
+            last[self.keyword[i]] = i 
         return last
 
     def kmp_search(self, search_start=0):
@@ -152,27 +165,26 @@ class search_algorithm:
         return -1
     
     def levenshtein_search_word(self, threshold, search_start=0):
-        """Return the index in text where a space-separated word matches keyword within threshold."""
+        """Return the index in text where a word matches keyword within threshold. Search starts at char index `search_start`."""
         text = self.text[search_start:]
-        words = text.split(" ")
-        index = search_start
+        matches = list(re.finditer(r"[\w']+", text)) 
 
-        for word in words:
-            # Skip over leading/trailing spaces
-            if not word:
-                index += 1
-                continue
-
+        for match in matches:
+            word = match.group()
+            # print(word)
+            start_index = match.start() + search_start 
             dist = self.levenshtein_distance(self.keyword, word)
             if dist <= threshold:
-                return index
-
-            index += len(word) + 1 
+                return start_index
 
         return -1
 
     def levenshtein_distance(self, a, b):
+        # print(f"Comparing: '{a}' vs '{b}'")
         """Compute the Levenshtein distance between strings a and b."""
+        sub_cost = 1
+        del_cost = 0.5
+        ins_cost = 0.5
         m, n = len(a), len(b)
         dp = [[0] * (n + 1) for _ in range(m + 1)]
 
@@ -183,20 +195,22 @@ class search_algorithm:
 
         for i in range(1, m + 1):
             for j in range(1, n + 1):
-                cost = 0 if a[i - 1] == b[j - 1] else 1
-                dp[i][j] = min(
-                    dp[i - 1][j] + 1,    
-                    dp[i][j - 1] + 1,   
-                    dp[i - 1][j - 1] + cost 
-                )
-
+                insertion = dp[i][j - 1] + ins_cost
+                deletion = dp[i - 1][j] + del_cost
+                substitution = dp[i - 1][j - 1] + (0 if a[i - 1] == b[j - 1] else sub_cost)
+                dp[i][j] = min(insertion, deletion, substitution)
+        
+        # print("DP Matrix:")
+        # for row in dp:
+        #     print(row)
+        # print(f"Distance = {dp[m][n]}")
         return dp[m][n]
 
 new = search_algorithm("", "ababababca")
 border = new.kmp_border_func()
 print(border)
 
-flower = search_algorithm("Flowers, also known as blooms and blossoms, are the reproductive structures of flowering plants", "art")
-print(flower.exact_search_result(matching_algorithm.KMP))
-print(flower.exact_search_result(matching_algorithm.BM))
-print(flower.similar_search_result(2, levenshtein_method.WORD))
+flower = search_algorithm("Flowers, also known as blooms and blossoms, are the reproductive structures of flowering plants", "ar")
+print(flower.exact_search_result(matching_algorithm.KMP)[1])
+print(flower.exact_search_result(matching_algorithm.BM)[1])
+print(flower.similar_search_result(1, levenshtein_method.WORD)[1])
