@@ -1,6 +1,6 @@
 from typing import Dict, Any, List
-from db import get_cv_list
-from config import CV_DIR
+from .db import get_cv_list
+from .config import CV_DIR
 import os
 
 def get_data() -> Dict[int, Dict[str, Any]]:
