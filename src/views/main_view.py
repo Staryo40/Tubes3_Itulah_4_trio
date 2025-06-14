@@ -371,11 +371,10 @@ class MainView(QMainWindow):
         keywords_preview_layout.setContentsMargins(10, 0, 0, 0)
         keywords_preview_layout.setSpacing(2)
         
-        max_preview = min(3, len(candidate_data["matches_keywords"]))
+        max_preview = min(3, len(candidate_data["search_res"]))
         for i in range(max_preview):
-            keyword_data = candidate_data["matches_keywords"][i]
-            keyword = keyword_data["keyword"]
-            occurrences = keyword_data["occurrences"]
+            keyword = list(candidate_data["search_res"].keys())[i]
+            occurrences = candidate_data["search_res"][keyword]["occurrence"]
             keyword_text = f"{i+1}. {keyword}: {occurrences} "
             keyword_text += "occurrence" if occurrences == 1 else "occurrences"
             
@@ -387,9 +386,9 @@ class MainView(QMainWindow):
                 }
             """)
             keywords_preview_layout.addWidget(keyword_label)
-        
-        if len(candidate_data["matches_keywords"]) > 3:
-            more_label = QLabel(f"... and {len(candidate_data['matches_keywords']) - 3} more")
+
+        if len(candidate_data["search_res"]) > 3:
+            more_label = QLabel(f"... and {len(candidate_data['search_res']) - 3} more")
             more_label.setStyleSheet("""
                 QLabel {
                     padding: 1px 0px;

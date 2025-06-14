@@ -187,14 +187,16 @@ class CardDetailDialog(QDialog):
         keywords_layout.setSpacing(12)
         
         # Create keyword cards
-        for i, keyword_data in enumerate(self.candidate_data["matches_keywords"]):
-            keyword_card = self.create_keyword_card(keyword_data, i + 1)
+        i = 0
+        for key, keyword_data in (self.candidate_data["search_res"].items()):
+            keyword_card = self.create_keyword_card(keyword_data, key, i)
             keywords_layout.addWidget(keyword_card)
+            i += 1
         
         scroll_area.setWidget(keywords_widget)
         layout.addWidget(scroll_area)
     
-    def create_keyword_card(self, keyword_data, index):
+    def create_keyword_card(self, keyword_data, name, index):
         """Create individual keyword card with gray theme"""
         card = QFrame()
         card.setStyleSheet("""
@@ -232,8 +234,8 @@ class CardDetailDialog(QDialog):
         # Keyword info
         info_layout = QVBoxLayout()
         info_layout.setSpacing(2)
-        
-        keyword_name = QLabel(keyword_data["keyword"])
+
+        keyword_name = QLabel(name)
         keyword_name.setStyleSheet("""
             QLabel {
                 color: #495057;
@@ -242,7 +244,7 @@ class CardDetailDialog(QDialog):
             }
         """)
         
-        occurrences = keyword_data["occurrences"]
+        occurrences = keyword_data["occurrence"]
         occurrence_text = f"{occurrences} {'occurrence' if occurrences == 1 else 'occurrences'}"
         occurrence_label = QLabel(occurrence_text)
         occurrence_label.setStyleSheet("""
