@@ -26,7 +26,6 @@ def add_applicant(first, last, dob, email, phone, address):
     conn = create_connection()
     if not conn:
         return None
-    
     try:
         cursor = conn.cursor()
         sql = """INSERT INTO ApplicantProfile 
@@ -47,11 +46,9 @@ def get_applicant(applicant_id):
     conn = create_connection()
     if not conn:
         return None
-    
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM ApplicantProfile WHERE applicant_id = %s", 
-                      (applicant_id,))
+        cursor.execute("SELECT * FROM ApplicantProfile WHERE applicant_id = %s", (applicant_id,))
         return cursor.fetchone()
     except Error as e:
         print(f"Error ambil pelamar: {e}")
@@ -65,7 +62,6 @@ def get_all_applicants():
     conn = create_connection()
     if not conn:
         return []
-    
     try:
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM ApplicantProfile ORDER BY last_name")
@@ -84,7 +80,6 @@ def add_application(applicant_id, role, cv_path):
     conn = create_connection()
     if not conn:
         return None
-    
     try:
         cursor = conn.cursor()
         sql = """INSERT INTO ApplicationDetail 
@@ -100,83 +95,35 @@ def add_application(applicant_id, role, cv_path):
         cursor.close()
         conn.close()
 
-def get_all_applications():
-    """Ambil semua lamaran dengan info pelamar"""
-    conn = create_connection()
-    if not conn:
-        return []
-    
-    try:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM ApplicantApplicationView")
-        return cursor.fetchall()
-    except Error as e:
-        print(f"Error ambil lamaran: {e}")
-        return []
-    finally:
-        cursor.close()
-        conn.close()
-
 def get_cv_list():
-    """Ambil daftar CV untuk pencarian"""
+    """
+    Ambil daftar CV, hasil JOIN ApplicantProfile dan ApplicationDetail,
+    field sesuai skema SQL terbaru.
+    """
     conn = create_connection()
     if not conn:
         return []
-    
     try:
         cursor = conn.cursor(dictionary=True)
-        sql = """SELECT ad.detail_id, ad.cv_path, ad.application_role,
-                        ap.applicant_id, ap.first_name, ap.last_name, ap.email
-                 FROM ApplicationDetail ad
-                 JOIN ApplicantProfile ap ON ad.applicant_id = ap.applicant_id"""
+        sql = """
+        SELECT
+            ap.applicant_id,
+            ap.first_name,
+            ap.last_name,
+            ap.date_of_birth,
+            ap.email,
+            ap.phone_number,
+            ap.address,
+            ad.detail_id,
+            ad.application_role,
+            ad.cv_path
+        FROM ApplicationDetail ad
+        JOIN ApplicantProfile ap ON ad.applicant_id = ap.applicant_id
+        """
         cursor.execute(sql)
         return cursor.fetchall()
     except Error as e:
         print(f"Error ambil CV list: {e}")
-        return []
-    finally:
-        cursor.close()
-        conn.close()
-
-# ============= SEARCH LOGGING =============
-
-def log_search(keywords, algorithm, exact_time=0, fuzzy_time=0, 
-               total_cvs=0, results_found=0, top_matches=10):
-    """Log aktivitas pencarian"""
-    conn = create_connection()
-    if not conn:
-        return None
-    
-    try:
-        cursor = conn.cursor()
-        sql = """INSERT INTO SearchSession 
-                 (keywords, algorithm_used, exact_match_time_ms, fuzzy_match_time_ms,
-                  total_cvs_scanned, results_found, top_matches_requested)
-                 VALUES (%s, %s, %s, %s, %s, %s, %s)"""
-        cursor.execute(sql, (keywords, algorithm, exact_time, fuzzy_time,
-                           total_cvs, results_found, top_matches))
-        conn.commit()
-        return cursor.lastrowid
-    except Error as e:
-        print(f"Error log pencarian: {e}")
-        return None
-    finally:
-        cursor.close()
-        conn.close()
-
-def get_search_history(limit=20):
-    """Ambil riwayat pencarian"""
-    conn = create_connection()
-    if not conn:
-        return []
-    
-    try:
-        cursor = conn.cursor(dictionary=True)
-        sql = "SELECT * FROM SearchSession ORDER BY search_timestamp DESC LIMIT %s"
-        cursor.execute(sql, (limit,))
-        return cursor.fetchall()
-    except Error as e:
-        print(f"Error ambil riwayat: {e}")
         return []
     finally:
         cursor.close()
@@ -189,17 +136,13 @@ def get_stats():
     conn = create_connection()
     if not conn:
         return {}
-    
     try:
         cursor = conn.cursor()
         stats = {}
-        
         cursor.execute("SELECT COUNT(*) FROM ApplicantProfile")
         stats['applicants'] = cursor.fetchone()[0]
-        
         cursor.execute("SELECT COUNT(*) FROM ApplicationDetail")
         stats['applications'] = cursor.fetchone()[0]
-        
         return stats
     except Error as e:
         print(f"Error ambil stats: {e}")
