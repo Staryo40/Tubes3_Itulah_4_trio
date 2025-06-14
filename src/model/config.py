@@ -1,18 +1,18 @@
 import os
 
-# Database MySQL 
+# Database MySQL
 DB_CONFIG = {
     'host': 'localhost',
-    'user': 'root',
-    'password': '', #pass sql
+    'user': 'root', #sesuiakan dengan sql masing-masing
+    'password': '', #sesuaikan dengan sql masing-masing
     'database': 'ats_system'
 }
 
-# Path direktori
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, '..', 'data')
-CV_DIR = os.path.join(DATA_DIR, 'cv') #perhatikan lagi nanti cara simpannya gimana
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
+PROJECT_ROOT = os.path.join(BASE_DIR, '..', '..')      
+DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
+CV_DIR = os.path.join(DATA_DIR, 'cv')
 
-# Pengaturan pencarian (ubah nanti)
+# Pengaturan pencarian
 MAX_RESULTS = 10
 SIMILARITY_THRESHOLD = 2

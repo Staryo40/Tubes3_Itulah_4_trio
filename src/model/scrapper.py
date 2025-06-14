@@ -1,3 +1,4 @@
+# scrapper.py - Ekstraksi teks dari PDF
 import os
 from typing import Dict, List
 from PyPDF2 import PdfReader
@@ -33,18 +34,26 @@ def clean_text(raw_text):
     return cleaned.strip()
 
 def find_pdf_files(directory=None):
-    """Cari semua file PDF"""
+    """Cari semua file PDF langsung di direktori utama"""
     search_dir = directory if directory else CV_DIR
     pdf_files = []
     
     try:
-        for root, dirs, files in os.walk(search_dir):
-            for file in files:
-                if file.lower().endswith('.pdf'):
-                    pdf_files.append(os.path.join(root, file))
+        if not os.path.exists(search_dir):
+            print(f"Direktori tidak ditemukan: {search_dir}")
+            return []
+        
+        # Scan langsung di direktori utama (tidak ada subfolder)
+        for file in os.listdir(search_dir):
+            if file.lower().endswith('.pdf'):
+                full_path = os.path.join(search_dir, file)
+                pdf_files.append(full_path)
+        
+        print(f"Ditemukan {len(pdf_files)} file PDF di {search_dir}")
         return sorted(pdf_files)
+        
     except Exception as e:
-        print(f"Error cari PDF: {e}")
+        print(f"Error mencari file PDF: {e}")
         return []
 
 def process_all_pdfs():
@@ -60,18 +69,21 @@ def process_all_pdfs():
     return results
 
 def get_cv_text(cv_path):
-    """Ambil teks CV berdasarkan path database"""
-    # cv_path format: '/data/cv/filename.pdf'
-    filename = cv_path.split('/')[-1]
+    """Ambil teks CV berdasarkan nama file"""
+    # cv_path sekarang langsung nama file: '57088974.pdf'
+    filename = cv_path
     full_path = os.path.join(CV_DIR, filename)
     
     if os.path.exists(full_path):
         return extract_pdf_text(full_path)
-    return ""
+    else:
+        print(f"File PDF tidak ditemukan: {filename}")
+        return ""
 
 def get_cv_file_path(cv_path):
-    """Konversi path database ke path file lengkap"""
-    filename = cv_path.split('/')[-1]
+    """Konversi nama file ke path lengkap"""
+    # cv_path sekarang langsung nama file: '57088974.pdf'
+    filename = cv_path
     return os.path.join(CV_DIR, filename)
 
 if __name__ == "__main__":

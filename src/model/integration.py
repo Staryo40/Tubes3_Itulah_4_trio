@@ -1,3 +1,4 @@
+# integration.py - Interface sederhana tanpa pre-stored extraction
 from typing import List, Dict, Any
 import os
 from db import get_cv_list, test_connection
@@ -9,8 +10,7 @@ from extractor import extract_all_info
 def get_all_cvs():
     """
     Ambil daftar CV untuk pencarian
-    Returns: List[Dict] dengan format:
-    [{"cv_path": str, "name": str, "email": str, "role": str}]
+    Returns: List[Dict] dengan format lengkap
     """
     try:
         raw_data = get_cv_list()
@@ -34,8 +34,8 @@ def get_all_cvs():
 
 def get_cv_content(cv_path):
     """
-    Ambil teks CV untuk pattern matching
-    Args: cv_path dari database ("/data/cv/filename.pdf")
+    Ambil teks CV untuk pattern matching (real-time)
+    Args: cv_path dari database
     Returns: String teks CV
     """
     try:
@@ -48,22 +48,23 @@ def get_cv_content(cv_path):
 
 def get_cv_summary(cv_path):
     """
-    Ambil summary CV untuk display GUI
-    Returns: Dict dengan info lengkap untuk tampilan
+    Ambil summary CV untuk display GUI (real-time extraction)
     """
     try:
         # Ambil data dari database
         cv_list = get_all_cvs()
         db_info = None
+        
         for cv in cv_list:
             if cv["cv_path"] == cv_path:
                 db_info = cv
                 break
         
-        # Ambil info hasil ekstraksi
-        extracted = get_cv_info(cv_path)
+        # Ekstrak real-time
+        cv_text = get_cv_content(cv_path)
+        extracted = extract_all_info(cv_text) if cv_text else {}
         
-        # Gabungkan info
+        # Gabungkan info database + ekstraksi
         summary = {
             "applicant_name": db_info["name"] if db_info else extracted.get("name", "Unknown"),
             "email": db_info["email"] if db_info else extracted.get("email", ""),
@@ -79,14 +80,10 @@ def get_cv_summary(cv_path):
         return summary
     except Exception as e:
         print(f"Error buat summary: {e}")
-        return {
-            "applicant_name": "Error", "email": "", "role": "",
-            "phone": "", "skills": [], "education": [], "experience": [],
-            "summary": "", "cv_path": cv_path
-        }
+        return create_empty_summary(cv_path)
 
 def get_cv_info(cv_path):
-    """Ambil info hasil ekstraksi CV"""
+    """Ambil info hasil ekstraksi (real-time)"""
     try:
         cv_text = get_cv_content(cv_path)
         if cv_text:
@@ -125,7 +122,7 @@ def check_system():
         status["cv_dir_exists"] = os.path.exists(CV_DIR)
         
         # Hitung CV
-        if status["cv_dir_exists"]:
+        if status["database_ok"]:
             cv_list = get_all_cvs()
             status["total_cvs"] = len(cv_list)
         
@@ -140,6 +137,20 @@ def check_system():
         print(f"Error cek sistem: {e}")
     
     return status
+
+def create_empty_summary(cv_path):
+    """Buat summary kosong"""
+    return {
+        "applicant_name": "Error",
+        "email": "",
+        "role": "",
+        "phone": "",
+        "skills": [],
+        "education": [],
+        "experience": [],
+        "summary": "",
+        "cv_path": cv_path
+    }
 
 def test_integration():
     """Test integrasi sistem"""
@@ -165,7 +176,7 @@ def test_integration():
         text = get_cv_content(cv_path)
         print(f"Ekstraksi teks: {len(text)} karakter")
         
-        # Test summary
+        # Test summary (real-time)
         summary = get_cv_summary(cv_path)
         print(f"Summary untuk: {summary['applicant_name']}")
         
