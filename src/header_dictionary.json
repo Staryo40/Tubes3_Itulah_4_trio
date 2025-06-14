@@ -1,0 +1,88 @@
+{
+    "contact": [
+        "contact",
+        "contact information",
+        "name",
+        "email",
+        "phone",
+        "address"
+    ],
+    "summary": [
+        "summary",
+        "profile",
+        "career profile",
+        "professional summary"
+    ],
+    "skills": [
+        "skills",
+        "core competencies",
+        "key skills",
+        "strengths",
+        "skill highlights"
+    ],
+    "technical_skills": [
+        "technical skills",
+        "tools",
+        "technology",
+        "software skills",
+        "computer skills"
+    ],
+    "experience": [
+        "experience",
+        "work experience",
+        "employment history",
+        "professional experience",
+        "work history"
+    ],
+    "education": [
+        "education",
+        "academic background",
+        "educational background",
+        "education and training",
+        "training"
+    ],
+    "certifications": [
+        "certifications",
+        "licenses",
+        "qualifications"
+    ],
+    "accomplishments": [
+        "accomplishments",
+        "achievements",
+        "career highlights",
+        "milestones"
+    ],
+    "languages": [
+        "languages",
+        "language skills",
+        "languages spoken",
+        "fluency"
+    ],
+    "volunteer": [
+        "volunteer experience",
+        "community service",
+        "community involvement"
+    ],
+    "projects": [
+        "projects",
+        "portfolio",
+        "freelance work",
+        "case studies"
+    ],
+    "affiliations": [
+        "affiliations",
+        "memberships",
+        "associations",
+        "professional affiliations"
+    ],
+    "references": [
+        "references",
+        "referees"
+    ],
+    "highlights": [
+        "highlights"
+    ],
+    "additional information":[
+        "additional information"
+    ]
+}
