@@ -1,15 +1,11 @@
+from .pdf_text import *
+from local_enum import *
 import re
 import json, os
-from enum import Enum
-from pdf_text import *
 
 header_dic = "data/header_dictionary.json"
 
-class text_format(Enum):
-    List = 1
-    Bullet = 2
-
-class cv_summary_generator:
+class CVSummaryGenerator:
     def __init__(self, text):
         self.text = text
     
@@ -66,10 +62,10 @@ class cv_summary_generator:
                 # for text in filtered[header]:
                 #     filtered_arr.append(re.sub(r'\n', ', ', text))
                 filtered_arr = self.split_non_list_chunks(content)
-                filtered[header] = {"type": text_format.List, "content": filtered_arr}
+                filtered[header] = {"type": TextFormat.List, "content": filtered_arr}
             else:
                 bullet_arr = self.bullet_block_to_array(content)
-                filtered[header] = {"type": text_format.List, "content": bullet_arr}
+                filtered[header] = {"type": TextFormat.List, "content": bullet_arr}
         return filtered
 
     def split_non_list_chunks(self, content):

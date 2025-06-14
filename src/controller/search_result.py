@@ -1,7 +1,7 @@
-from search_algorithm import *
+from .search_algorithm import *
+from .pdf_text import *
+from .summary import *
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pdf_text import *
-from summary import *
 import os
 import time
 
@@ -50,8 +50,8 @@ import time
 #              }
 # }
 
-class search_result:
-    def __init__(self, root_data_dir, cv_dic, keywords, top_n, lev_threshold, lev_method: levenshtein_method, match_algo: matching_algorithm):
+class SearchResult:
+    def __init__(self, root_data_dir, cv_dic, keywords, top_n, lev_threshold, lev_method: LevenshteinMethod, match_algo: MatchingAlgorithm):
         self.root = root_data_dir
         self.cv_dic = cv_dic
         self.keywords = keywords
@@ -62,9 +62,9 @@ class search_result:
     
     def process_cv(self, id, cv_data):
         full_path = os.path.join(self.root, cv_data["cv_path"])
-        pdf = pdf_extractor(full_path)
+        pdf = PDFExtractor(full_path)
         raw_text = pdf.extract_raw_from_pdf()
-        matcher = multiple_keyword_search(raw_text, self.keywords)
+        matcher = MultipleKeywordSearch(raw_text, self.keywords)
 
         keyword_dic = matcher.keywords_search_result(self.lev_threshold, self.lev_method, self.match_algo)
         exact_match = matcher.exact_match_count(keyword_dic)
@@ -72,7 +72,7 @@ class search_result:
         total_match = exact_match + fuzzy_match
 
         raw_pdf_text = pdf.pdf_pure_text()
-        sum_gen = cv_summary_generator(raw_pdf_text)
+        sum_gen = CVSummaryGenerator(raw_pdf_text)
         sum_dic = sum_gen.get_final_summary()
 
         return id, {
@@ -114,28 +114,28 @@ class search_result:
         result["result"] = sorted_result
         return result
 
-cv_dic = {
-    "001": {
-        "name": "Alice Johnson",
-        "dob": "1990-04-12",
-        "address": "123 Elm Street, Springfield, IL",
-        "phone": "555-123-4567",
-        "role": "Data Analyst",
-        "path": "alice_johnson.pdf"
-    },
-    "002": {
-        "name": "Bob Martinez",
-        "dob": "1985-09-30",
-        "address": "456 Oak Avenue, Rivertown, NY",
-        "phone": "555-987-6543",
-        "role": "Operations Manager",
-        "path": "bob_martinez.pdf"
-    }
-}
-
 if __name__ == "__main__":     
+    cv_dic = {
+        "001": {
+            "name": "Alice Johnson",
+            "dob": "1990-04-12",
+            "address": "123 Elm Street, Springfield, IL",
+            "phone": "555-123-4567",
+            "role": "Data Analyst",
+            "path": "alice_johnson.pdf"
+        },
+        "002": {
+            "name": "Bob Martinez",
+            "dob": "1985-09-30",
+            "address": "456 Oak Avenue, Rivertown, NY",
+            "phone": "555-987-6543",
+            "role": "Operations Manager",
+            "path": "bob_martinez.pdf"
+        }
+    }
+    
     data_path = os.path.join(os.getcwd(), "data", "cv")
-    res_gen = search_result(data_path, cv_dic, ["managed", "efficiency", "Presenter"], 1, 2, levenshtein_method.WORD, matching_algorithm.BM)
+    res_gen = SearchResult(data_path, cv_dic, ["managed", "efficiency", "Presenter"], 1, 2, LevenshteinMethod.WORD, MatchingAlgorithm.BM)
     result = res_gen.search_result()
     for key, content in result["result"].items():
         print("SEARCH RESULT")

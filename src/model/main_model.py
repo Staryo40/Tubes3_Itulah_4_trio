@@ -25,7 +25,7 @@
 # }
 
 
-class CandidateModel:
+class MainModel:
     def __init__(self):
         self.candidates_data = []
         self.current_page = 0

@@ -1,35 +1,22 @@
-from enum import Enum
 import re
+from local_enum import *
 
-class matching_algorithm(Enum):
-    KMP = 1
-    BM = 2
-
-class levenshtein_method(Enum):
-    WORD = 1
-    WINDOW = 2
-
-class keyword_result(Enum):
-    Exact = 1
-    Similar = 2
-    NotFound = 3
-
-class search_algorithm:
+class SearchAlgorithm:
     def __init__(self, text, keyword):
         self.keyword = keyword
         self.text = text
         self.text_length = len(self.text)
         self.keyword_length = len(self.keyword)
     
-    def exact_search_result(self, algo: matching_algorithm):
+    def exact_search_result(self, algo: MatchingAlgorithm):
         "returns exact matching using KMP or BM, output: (<number of matches>, <whole text with highlight for matches>)"
         indices = []
         start = 0
 
         while start < self.text_length:
-            if (algo == matching_algorithm.KMP):
+            if (algo == MatchingAlgorithm.KMP):
                 match_index = self.kmp_search(start)
-            elif (algo == matching_algorithm.BM):
+            elif (algo == MatchingAlgorithm.BM):
                 match_index = self.boyer_moore_search(start)
 
             if match_index == -1:
@@ -50,15 +37,15 @@ class search_algorithm:
         result += self.text[last_index:]
         return (len(indices), result)
     
-    def exact_search_indexes(self, algo: matching_algorithm):
+    def exact_search_indexes(self, algo: MatchingAlgorithm):
         "return starting indexes of exact matches"
         indices = []
         start = 0
 
         while start < self.text_length:
-            if (algo == matching_algorithm.KMP):
+            if (algo == MatchingAlgorithm.KMP):
                 match_index = self.kmp_search(start)
-            elif (algo == matching_algorithm.BM):
+            elif (algo == MatchingAlgorithm.BM):
                 match_index = self.boyer_moore_search(start)
 
             if match_index == -1:
@@ -68,7 +55,7 @@ class search_algorithm:
 
         return indices
     
-    def similar_search_result(self, threshold, method: levenshtein_method):
+    def similar_search_result(self, threshold, method: LevenshteinMethod):
         "returns similar matching using levenshtein, output: (<number of matches>, <whole text with highlight for matches>)"
         result = ""
         last_index = 0
@@ -76,9 +63,9 @@ class search_algorithm:
         found = 0
 
         while start <= self.text_length - self.keyword_length:
-            if method == levenshtein_method.WORD:
+            if method == LevenshteinMethod.WORD:
                 match_index = self.levenshtein_search_word(threshold, start)
-            elif method == levenshtein_method.WINDOW:
+            elif method == LevenshteinMethod.WINDOW:
                 match_index = self.levenshtein_search_window(threshold, start)
             else:
                 break
@@ -87,13 +74,13 @@ class search_algorithm:
                 break
             found += 1
 
-            if method == levenshtein_method.WORD:
+            if method == LevenshteinMethod.WORD:
                 word_match = re.match(r"[\w']+", self.text[match_index:])
                 if not word_match:
                     break
                 matched_text = word_match.group()
                 match_end = match_index + len(matched_text)
-            elif method == levenshtein_method.WINDOW:
+            elif method == LevenshteinMethod.WINDOW:
                 matched_text = self.text[match_index:match_index + self.keyword_length]
                 match_end = match_index + self.keyword_length
 
@@ -101,7 +88,7 @@ class search_algorithm:
             result += "\033[93m" + matched_text + "\033[0m" # yellow
             last_index = match_end
 
-            if method == levenshtein_method.WORD:
+            if method == LevenshteinMethod.WORD:
                 next_space = self.text.find(' ', match_end)
                 start = next_space + 1 if next_space != -1 else self.text_length
             else:
@@ -110,16 +97,16 @@ class search_algorithm:
         result += self.text[last_index:]
         return (found, result)
 
-    def similar_search_indexes(self, threshold, method: levenshtein_method):
+    def similar_search_indexes(self, threshold, method: LevenshteinMethod):
         "return starting indexes of similar matches"
         last_index = 0
         start = 0
         indices = []
 
         while start <= self.text_length - self.keyword_length:
-            if method == levenshtein_method.WORD:
+            if method == LevenshteinMethod.WORD:
                 match_index = self.levenshtein_search_word(threshold, start)
-            elif method == levenshtein_method.WINDOW:
+            elif method == LevenshteinMethod.WINDOW:
                 match_index = self.levenshtein_search_window(threshold, start)
             else:
                 break
@@ -128,19 +115,19 @@ class search_algorithm:
                 break
             indices.append(match_index)
 
-            if method == levenshtein_method.WORD:
+            if method == LevenshteinMethod.WORD:
                 word_match = re.match(r"[\w']+", self.text[match_index:])
                 if not word_match:
                     break
                 matched_text = word_match.group()
                 match_end = match_index + len(matched_text)
-            elif method == levenshtein_method.WINDOW:
+            elif method == LevenshteinMethod.WINDOW:
                 matched_text = self.text[match_index:match_index + self.keyword_length]
                 match_end = match_index + self.keyword_length
 
             last_index = match_end
 
-            if method == levenshtein_method.WORD:
+            if method == LevenshteinMethod.WORD:
                 next_space = self.text.find(' ', match_end)
                 start = next_space + 1 if next_space != -1 else self.text_length
             else:
@@ -269,32 +256,32 @@ class search_algorithm:
         # print(f"Distance = {dp[m][n]}")
         return dp[m][n]
 
-class multiple_keyword_search:
+class MultipleKeywordSearch:
     def __init__(self, text, keywords):
         self.text = text
         self.keywords = keywords
         self.n_key = len(keywords)
     
-    def keywords_search_result(self, lev_threshold, lev_method: levenshtein_method, algo: matching_algorithm):
+    def keywords_search_result(self, lev_threshold, lev_method: LevenshteinMethod, algo: MatchingAlgorithm):
         "Get matching results from each keyword, gets both exact and fuzzy results if exact is not found"
         result = {}
         for word in self.keywords:
-            search = search_algorithm(self.text, word)
+            search = SearchAlgorithm(self.text, word)
 
             exact = search.exact_search_indexes(algo)
             if (exact and len(exact) > 0):
-                result[word] = { "type": keyword_result.Exact,
+                result[word] = { "type": KeywordResult.Exact,
                                  "occurrence": len(exact) }
                 continue
             
             fuzzy = search.similar_search_indexes(lev_threshold, lev_method)
             if (fuzzy and len(fuzzy) > 0):
-                result[word] = { "type": keyword_result.Similar,
+                result[word] = { "type": KeywordResult.Similar,
                                  "occurrence": len(fuzzy) }
                 continue
             
             if (len(fuzzy) <= 0 and len(exact) <= 0):
-                result[word] = { "type": keyword_result.NotFound,
+                result[word] = { "type": KeywordResult.NotFound,
                                 "occurrence": 0 }
         
         return result
@@ -307,23 +294,23 @@ class multiple_keyword_search:
     def similar_match_count(self, keyword_dic):
         count = 0
         for word, content in keyword_dic.items():
-            if content['type'] == keyword_result.Similar:
+            if content['type'] == KeywordResult.Similar:
                 count += content['occurrence']
         return count
     
     def exact_match_count(self, keyword_dic):
         count = 0
         for word, content in keyword_dic.items():
-            if content['type'] == keyword_result.Exact:
+            if content['type'] == KeywordResult.Exact:
                 count += content['occurrence']
         return count
 
 if __name__ == "__main__":
-    new = search_algorithm("", "ababababca")
+    new = SearchAlgorithm("", "ababababca")
     border = new.kmp_border_func()
     print(border)
 
-    flower = search_algorithm("Flowers, also known as blooms and blossoms, are the reproductive structures of flowering plants", "flower")
-    print(flower.exact_search_result(matching_algorithm.KMP)[1])
-    print(flower.exact_search_result(matching_algorithm.BM)[1])
-    print(flower.similar_search_result(1, levenshtein_method.WORD)[1])
+    flower = SearchAlgorithm("Flowers, also known as blooms and blossoms, are the reproductive structures of flowering plants", "flower")
+    print(flower.exact_search_result(MatchingAlgorithm.KMP)[1])
+    print(flower.exact_search_result(MatchingAlgorithm.BM)[1])
+    print(flower.similar_search_result(1, LevenshteinMethod.WORD)[1])

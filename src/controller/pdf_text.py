@@ -14,7 +14,7 @@ def extract_text_from_pdf(pdf_path):
 
     return full_text.strip()
 
-class pdf_extractor:
+class PDFExtractor:
     def __init__(self, pdf_path):
         self.pdf_path = pdf_path
 
@@ -70,7 +70,7 @@ class pdf_extractor:
     
 # Example usage
 if __name__ == "__main__":
-    ext = pdf_extractor("test.pdf")
+    ext = PDFExtractor("test.pdf")
     print(ext.extract_raw_from_pdf())
     # pdf_path = "test.pdf"  
     # ind = extract_with_indent(pdf_path)

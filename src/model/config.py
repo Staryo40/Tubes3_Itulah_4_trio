@@ -1,10 +1,12 @@
 import os
+from dotenv import load_dotenv
 
-# Database MySQL
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', '.env'))
+
 DB_CONFIG = {
     'host': 'localhost',
-    'user': 'root', #sesuiakan dengan sql masing-masing
-    'password': '', #sesuaikan dengan sql masing-masing
+    'user': 'root', 
+    'password': os.getenv('DB_PASSWORD', ''),
     'database': 'ats_system'
 }
 

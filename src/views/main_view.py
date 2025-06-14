@@ -5,11 +5,12 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QFont, QCursor
-from views.card_detail_dialog import CardDetailDialog
+from .card_detail_dialog import CardDetailDialog
+from local_enum import *
 
 class MainView(QMainWindow):
     # Signals untuk komunikasi dengan controller
-    search_requested = pyqtSignal(str, str, int)  # keywords, algorithm, top_matches
+    search_requested = pyqtSignal(list, MatchingAlgorithm, int)  # keywords, algorithm, top_matches
     algorithm_changed = pyqtSignal(int)  # algorithm state
     previous_page_requested = pyqtSignal()
     next_page_requested = pyqtSignal()
@@ -296,11 +297,20 @@ class MainView(QMainWindow):
         layout.addWidget(self.search_button)
     
     def on_search_clicked(self):
-        keywords = self.search_bar.text()
+        keywords = [word.strip() for word in self.search_bar.text().split(",") if word.strip()]
         algorithms = ["KMP", "Aho-Corasick", "BM"]
         algorithm = algorithms[self.toggle_state]
         top_matches = self.spin_box.value()
-        self.search_requested.emit(keywords, algorithm, top_matches)
+        algo_enum = MatchingAlgorithm.KMP
+        if algorithm == "KMP":
+            algo_enum = MatchingAlgorithm.KMP
+        elif algorithm == "BM":
+            algo_enum = MatchingAlgorithm.BM
+        elif algorithm == "Aho-Corasick":
+            algo_enum = MatchingAlgorithm.AC
+        else:
+            algo_enum = MatchingAlgorithm.KMP
+        self.search_requested.emit(keywords, algo_enum, top_matches)
 
     def update_cards(self, candidates_data):
         # Clear existing cards
@@ -319,7 +329,7 @@ class MainView(QMainWindow):
             self.cards_layout.addWidget(card, row, col)
 
     def create_card(self, candidate_data):
-        print(f"Creating card for candidate: {candidate_data}")
+        # print(f"Creating card for candidate: {candidate_data}")
         card = QFrame()
         card.setFrameShape(QFrame.StyledPanel)
         card.setStyleSheet("""
@@ -354,8 +364,8 @@ class MainView(QMainWindow):
         name_font.setPointSize(12)
         name_label.setFont(name_font)
         
-        matches_text = f"{candidate_data['matches']} match"
-        if candidate_data['matches'] != 1:
+        matches_text = f"{candidate_data['total_match']} match"
+        if candidate_data['total_match'] != 1:
             matches_text += "es"
         matches_label = QLabel(matches_text)
         matches_label.setAlignment(Qt.AlignRight)
