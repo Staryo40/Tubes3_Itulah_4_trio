@@ -161,7 +161,7 @@ class search_algorithm:
         j = m - 1
 
         while i < n:
-            if self.keyword[j] == self.text[i]:
+            if self.keyword[j].lower() == self.text[i].lower():
                 if j == 0:
                     return i  
                 else:
@@ -186,7 +186,7 @@ class search_algorithm:
         i = search_start
         j = 0
         while (i < self.text_length):
-            if (self.text[i] == self.keyword[j]):
+            if (self.text[i].lower() == self.keyword[j].lower()):
                 if (j == self.keyword_length-1):
                     return i - self.keyword_length + 1
                 i += 1
@@ -221,7 +221,7 @@ class search_algorithm:
 
         for i in range(search_start, n - m + 1):
             window = self.text[i:i + m]
-            dist = self.levenshtein_distance(self.keyword, window)
+            dist = self.levenshtein_distance(self.keyword.lower(), window.lower())
             if dist <= threshold:
                 return i
 
@@ -229,14 +229,14 @@ class search_algorithm:
     
     def levenshtein_search_word(self, threshold, search_start=0):
         """Return the index in text where a word matches keyword within threshold. Search starts at char index `search_start`."""
-        text = self.text[search_start:]
+        text = self.text[search_start:].lower()
         matches = list(re.finditer(r"[\w']+", text)) 
 
         for match in matches:
             word = match.group()
             # print(word)
             start_index = match.start() + search_start 
-            dist = self.levenshtein_distance(self.keyword, word)
+            dist = self.levenshtein_distance(self.keyword.lower(), word)
             if dist <= threshold:
                 return start_index
 
@@ -292,9 +292,10 @@ class multiple_keyword_search:
                 result[word] = { "type": keyword_result.Similar,
                                  "occurrence": len(fuzzy) }
                 continue
-
-            result[word] = { "type": keyword_result.NotFound,
-                             "occurrence": 0 }
+            
+            if (len(fuzzy) <= 0 and len(exact) <= 0):
+                result[word] = { "type": keyword_result.NotFound,
+                                "occurrence": 0 }
         
         return result
 
@@ -305,23 +306,24 @@ class multiple_keyword_search:
         
     def similar_match_count(self, keyword_dic):
         count = 0
-        for word in keyword_dic:
-            if word['type'] == keyword_result.Similar:
-                count += word['occurrence']
+        for word, content in keyword_dic.items():
+            if content['type'] == keyword_result.Similar:
+                count += content['occurrence']
         return count
     
     def exact_match_count(self, keyword_dic):
         count = 0
-        for word in keyword_dic:
-            if word['type'] == keyword_result.Exact:
-                count += word['occurrence']
+        for word, content in keyword_dic.items():
+            if content['type'] == keyword_result.Exact:
+                count += content['occurrence']
         return count
-    
-new = search_algorithm("", "ababababca")
-border = new.kmp_border_func()
-print(border)
 
-flower = search_algorithm("Flowers, also known as blooms and blossoms, are the reproductive structures of flowering plants", "ar")
-print(flower.exact_search_result(matching_algorithm.KMP)[1])
-print(flower.exact_search_result(matching_algorithm.BM)[1])
-print(flower.similar_search_result(1, levenshtein_method.WORD)[1])
+if __name__ == "__main__":
+    new = search_algorithm("", "ababababca")
+    border = new.kmp_border_func()
+    print(border)
+
+    flower = search_algorithm("Flowers, also known as blooms and blossoms, are the reproductive structures of flowering plants", "flower")
+    print(flower.exact_search_result(matching_algorithm.KMP)[1])
+    print(flower.exact_search_result(matching_algorithm.BM)[1])
+    print(flower.similar_search_result(1, levenshtein_method.WORD)[1])

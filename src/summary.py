@@ -1,9 +1,9 @@
 import re
-import json
+import json, os
 from enum import Enum
 from pdf_text import *
 
-header_dic = "header_dictionary.json"
+header_dic = "src/header_dictionary.json"
 
 class text_format(Enum):
     List = 1
@@ -61,10 +61,11 @@ class cv_summary_generator:
         filtered = {}
         for header, content in summary_dic.items():
             if '<bullet>' not in content:
-                filtered[header] = self.split_non_list_chunks(content)
-                filtered_arr = []
-                for text in filtered[header]:
-                    filtered_arr.append(re.sub(r'\n', ', ', text))
+                # filtered[header] = self.split_non_list_chunks(content)
+                # filtered_arr = []
+                # for text in filtered[header]:
+                #     filtered_arr.append(re.sub(r'\n', ', ', text))
+                filtered_arr = self.split_non_list_chunks(content)
                 filtered[header] = {"type": text_format.List, "content": filtered_arr}
             else:
                 bullet_arr = self.bullet_block_to_array(content)

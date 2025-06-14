@@ -1,4 +1,5 @@
 import fitz  # PyMuPDF
+import re
 import math
 
 def extract_text_from_pdf(pdf_path):
@@ -16,6 +17,19 @@ def extract_text_from_pdf(pdf_path):
 class pdf_extractor:
     def __init__(self, pdf_path):
         self.pdf_path = pdf_path
+
+    def extract_raw_from_pdf(self):
+        """Extracts raw text from all pages of a PDF file, replacing newlines with spaces."""
+        doc = fitz.open(self.pdf_path)
+        full_text = ""
+
+        for page in doc:
+            text = page.get_text("text")
+            full_text += text
+
+        cleaned_text = re.sub(r'[\n\r]+', ' ', full_text)
+        
+        return cleaned_text.strip()
     
     def extract_with_indent(self):
         doc = fitz.open(self.pdf_path)
@@ -54,11 +68,12 @@ class pdf_extractor:
         text = self.indent_text_to_format_text(ind)
         return text
     
-
 # Example usage
-# if __name__ == "__main__":
-#     pdf_path = "test.pdf"  
-#     ind = extract_with_indent(pdf_path)
-#     text = indent_text_to_format_text(ind)
-#     print(text)
+if __name__ == "__main__":
+    ext = pdf_extractor("test.pdf")
+    print(ext.extract_raw_from_pdf())
+    # pdf_path = "test.pdf"  
+    # ind = extract_with_indent(pdf_path)
+    # text = indent_text_to_format_text(ind)
+    # print(text)
     # print(repr(text))
