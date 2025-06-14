@@ -88,7 +88,7 @@ class MainView(QMainWindow):
 
     def setAppLogo(self, layout):
         self.image_label = QLabel(self)
-        self.pixmap = QPixmap("../img/CVSearch_logo.png")
+        self.pixmap = QPixmap("img/CVSearch_logo.png")
         scaled_pixmap = self.pixmap.scaledToHeight(100, Qt.SmoothTransformation)
         self.image_label.setPixmap(scaled_pixmap)
         self.image_label.setScaledContents(True)
