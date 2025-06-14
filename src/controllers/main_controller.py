@@ -9,7 +9,8 @@ class MainController:
         self.view = view
         self.model = model
         self.connect_signals()
-        self.initialize()
+        self.results = {}
+        # self.initialize()
     
     def connect_signals(self):
         """Connect view signals to controller methods"""
@@ -30,8 +31,8 @@ class MainController:
         print(f"Controller: Searching for '{keywords}' using {algorithm}, top {top_matches} matches")
         self.model.current_page = 0
         # ganti pake fungsi dari aryo
-        results = self.model.search_candidates(keywords, algorithm, top_matches)
-        print(f"results: {results}")
+        self.results = self.model.search_candidates(keywords, algorithm, top_matches)
+        print(f"results: {self.results}")
         self.update_view()
     
     def handle_algorithm_change(self, algorithm_state):
@@ -144,9 +145,8 @@ class MainController:
     
     def update_view(self):
         """Update view with current model state"""
-        current_candidates = self.model.get_candidates_for_page()
-        self.view.update_cards(current_candidates)
-        
+        self.view.update_cards(self.results['result'].values())
+
         can_previous = self.model.can_go_previous()
         can_next = self.model.can_go_next()
         self.view.update_pagination_buttons(can_previous, can_next)

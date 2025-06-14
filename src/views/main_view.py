@@ -319,6 +319,7 @@ class MainView(QMainWindow):
             self.cards_layout.addWidget(card, row, col)
 
     def create_card(self, candidate_data):
+        print(f"Creating card for candidate: {candidate_data}")
         card = QFrame()
         card.setFrameShape(QFrame.StyledPanel)
         card.setStyleSheet("""

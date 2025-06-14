@@ -33,7 +33,7 @@ class CandidateModel:
         
     def load_sample_data(self):
         """Load sample candidate data"""
-        self.candidates_data = {
+        return  {
             "time": 100,
             "cv_num": 8,
             "result": {
@@ -185,12 +185,12 @@ class CandidateModel:
     def get_candidates_for_page(self):
         """Get candidates for current page"""
         start = self.current_page * self.cards_per_page
-        end = min(start + self.cards_per_page, len(self.candidates_data["result"]))
-        return list(self.candidates_data["result"].values())[start:end]
-    
+        end = min(start + self.cards_per_page, len(self.candidates_data))
+        return list(self.candidates_data)[start:end]
+
     def get_total_pages(self):
         """Get total number of pages"""
-        return (len(self.candidates_data["result"]) + self.cards_per_page - 1) // self.cards_per_page
+        return (len(self.candidates_data) + self.cards_per_page - 1) // self.cards_per_page
 
     def can_go_previous(self):
         """Check if can go to previous page"""
@@ -219,6 +219,6 @@ class CandidateModel:
         # Implement actual search logic here
         print(f"Searching for: {keywords} using {algorithm}, top {top_matches} matches")
         # For now, just return all data
-        return self.candidates_data["result"]
+        return self.load_sample_data()
 
 
