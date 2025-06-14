@@ -1,85 +1,213 @@
-# db.py -- Modul koneksi & query ATS DB MySQL
 import mysql.connector
+from mysql.connector import Error
+from typing import List, Dict, Optional
+from config import DB_CONFIG
 
-# Bikin koneksi ke database
-def db_conn():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="passwordmu",   # ganti sesuai setting
-        database="ats_system"
-    )
+def create_connection():
+    """Buat koneksi database"""
+    try:
+        return mysql.connector.connect(**DB_CONFIG)
+    except Error as e:
+        print(f"Error koneksi: {e}")
+        return None
 
-# Insert data pelamar, return id
-def add_applicant(first, last, dob, email, phone, addr):
-    db = db_conn()
-    cur = db.cursor()
-    sql = """
-    INSERT INTO ApplicantProfile
-    (first_name, last_name, date_of_birth, email, phone_number, address)
-    VALUES (%s, %s, %s, %s, %s, %s)
-    """
-    cur.execute(sql, (first, last, dob, email, phone, addr))
-    db.commit()
-    aid = cur.lastrowid
-    cur.close()
-    db.close()
-    return aid
+def test_connection():
+    """Test koneksi database"""
+    conn = create_connection()
+    if conn and conn.is_connected():
+        conn.close()
+        return True
+    return False
 
-# Insert detail lamaran, return id
-def add_detail(applicant_id, role, cv_path):
-    db = db_conn()
-    cur = db.cursor()
-    sql = """
-    INSERT INTO ApplicationDetail
-    (applicant_id, application_role, cv_path)
-    VALUES (%s, %s, %s)
-    """
-    cur.execute(sql, (applicant_id, role, cv_path))
-    db.commit()
-    did = cur.lastrowid
-    cur.close()
-    db.close()
-    return did
+# ============= APPLICANT OPERATIONS =============
 
-# Ambil semua data pelamar
-def get_applicants():
-    db = db_conn()
-    cur = db.cursor(dictionary=True)
-    cur.execute("SELECT * FROM ApplicantProfile")
-    rows = cur.fetchall()
-    cur.close()
-    db.close()
-    return rows
+def add_applicant(first, last, dob, email, phone, address):
+    """Tambah pelamar baru"""
+    conn = create_connection()
+    if not conn:
+        return None
+    
+    try:
+        cursor = conn.cursor()
+        sql = """INSERT INTO ApplicantProfile 
+                 (first_name, last_name, date_of_birth, email, phone_number, address)
+                 VALUES (%s, %s, %s, %s, %s, %s)"""
+        cursor.execute(sql, (first, last, dob, email, phone, address))
+        conn.commit()
+        return cursor.lastrowid
+    except Error as e:
+        print(f"Error tambah pelamar: {e}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
 
-# Ambil detail lamaran + profile (join view)
-def get_details():
-    db = db_conn()
-    cur = db.cursor(dictionary=True)
-    cur.execute("SELECT * FROM ApplicantApplicationView")
-    rows = cur.fetchall()
-    cur.close()
-    db.close()
-    return rows
+def get_applicant(applicant_id):
+    """Ambil data pelamar"""
+    conn = create_connection()
+    if not conn:
+        return None
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM ApplicantProfile WHERE applicant_id = %s", 
+                      (applicant_id,))
+        return cursor.fetchone()
+    except Error as e:
+        print(f"Error ambil pelamar: {e}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
 
-# Ambil satu CV berdasarkan id
-def get_cv(aid):
-    db = db_conn()
-    cur = db.cursor(dictionary=True)
-    cur.execute("SELECT * FROM ApplicantProfile WHERE applicant_id=%s", (aid,))
-    row = cur.fetchone()
-    cur.close()
-    db.close()
-    return row
+def get_all_applicants():
+    """Ambil semua pelamar"""
+    conn = create_connection()
+    if not conn:
+        return []
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM ApplicantProfile ORDER BY last_name")
+        return cursor.fetchall()
+    except Error as e:
+        print(f"Error ambil semua pelamar: {e}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()
 
-# Contoh penggunaan
+# ============= APPLICATION OPERATIONS =============
+
+def add_application(applicant_id, role, cv_path):
+    """Tambah detail lamaran"""
+    conn = create_connection()
+    if not conn:
+        return None
+    
+    try:
+        cursor = conn.cursor()
+        sql = """INSERT INTO ApplicationDetail 
+                 (applicant_id, application_role, cv_path)
+                 VALUES (%s, %s, %s)"""
+        cursor.execute(sql, (applicant_id, role, cv_path))
+        conn.commit()
+        return cursor.lastrowid
+    except Error as e:
+        print(f"Error tambah lamaran: {e}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_all_applications():
+    """Ambil semua lamaran dengan info pelamar"""
+    conn = create_connection()
+    if not conn:
+        return []
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM ApplicantApplicationView")
+        return cursor.fetchall()
+    except Error as e:
+        print(f"Error ambil lamaran: {e}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_cv_list():
+    """Ambil daftar CV untuk pencarian"""
+    conn = create_connection()
+    if not conn:
+        return []
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+        sql = """SELECT ad.detail_id, ad.cv_path, ad.application_role,
+                        ap.applicant_id, ap.first_name, ap.last_name, ap.email
+                 FROM ApplicationDetail ad
+                 JOIN ApplicantProfile ap ON ad.applicant_id = ap.applicant_id"""
+        cursor.execute(sql)
+        return cursor.fetchall()
+    except Error as e:
+        print(f"Error ambil CV list: {e}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()
+
+# ============= SEARCH LOGGING =============
+
+def log_search(keywords, algorithm, exact_time=0, fuzzy_time=0, 
+               total_cvs=0, results_found=0, top_matches=10):
+    """Log aktivitas pencarian"""
+    conn = create_connection()
+    if not conn:
+        return None
+    
+    try:
+        cursor = conn.cursor()
+        sql = """INSERT INTO SearchSession 
+                 (keywords, algorithm_used, exact_match_time_ms, fuzzy_match_time_ms,
+                  total_cvs_scanned, results_found, top_matches_requested)
+                 VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+        cursor.execute(sql, (keywords, algorithm, exact_time, fuzzy_time,
+                           total_cvs, results_found, top_matches))
+        conn.commit()
+        return cursor.lastrowid
+    except Error as e:
+        print(f"Error log pencarian: {e}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_search_history(limit=20):
+    """Ambil riwayat pencarian"""
+    conn = create_connection()
+    if not conn:
+        return []
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+        sql = "SELECT * FROM SearchSession ORDER BY search_timestamp DESC LIMIT %s"
+        cursor.execute(sql, (limit,))
+        return cursor.fetchall()
+    except Error as e:
+        print(f"Error ambil riwayat: {e}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()
+
+# ============= UTILITY =============
+
+def get_stats():
+    """Ambil statistik database"""
+    conn = create_connection()
+    if not conn:
+        return {}
+    
+    try:
+        cursor = conn.cursor()
+        stats = {}
+        
+        cursor.execute("SELECT COUNT(*) FROM ApplicantProfile")
+        stats['applicants'] = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM ApplicationDetail")
+        stats['applications'] = cursor.fetchone()[0]
+        
+        return stats
+    except Error as e:
+        print(f"Error ambil stats: {e}")
+        return {}
+    finally:
+        cursor.close()
+        conn.close()
+
 if __name__ == "__main__":
-    # Insert contoh
-    aid = add_applicant("Budi", "Santoso", "1999-09-09", "budi@mail.com", "0812345678", "Bandung")
-    print("ID pelamar:", aid)
-    # Insert detail lamaran
-    did = add_detail(aid, "Software Engineer", "/data/cv/budi_software.pdf")
-    print("ID detail:", did)
-    # Cek semua pelamar
-    data = get_applicants()
-    print(data)
+    print("Test koneksi database:", test_connection())
+    print("Statistik:", get_stats())
