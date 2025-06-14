@@ -1,4 +1,5 @@
 import fitz  # PyMuPDF
+import math
 
 def extract_text_from_pdf(pdf_path):
     """Extracts plain text from all pages of a PDF file."""
@@ -8,59 +9,56 @@ def extract_text_from_pdf(pdf_path):
     for page_num in range(len(doc)):
         page = doc[page_num]
         text = page.get_text("text") 
-        full_text += text + "\n" 
+        full_text += text
 
     return full_text.strip()
 
+class pdf_extractor:
+    def __init__(self, pdf_path):
+        self.pdf_path = pdf_path
+    
+    def extract_with_indent(self):
+        doc = fitz.open(self.pdf_path)
+        result = []
 
-def extract_from_pdf(pdf_path):
-    """Extracts text from a PDF file, heuristically preserving bullet points."""
-    doc = fitz.open(pdf_path)
-    full_text = ""
+        for page in doc:
+            blocks = page.get_text("dict")["blocks"]
+            for block in blocks:
+                for line in block.get("lines", []):
+                    spans = line.get("spans", [])
+                    if not spans:
+                        continue
+                    x0 = spans[0]["bbox"][0]
+                    text = " ".join(span["text"].strip() for span in spans).strip()
+                    result.append((x0, text))
 
-    for page in doc:
-        blocks = page.get_text("dict")["blocks"]
-        for block in blocks:
-            if "lines" not in block:
-                continue
-            for line in block["lines"]:
-                line_text = ""
-                spans = line["spans"]
-                if not spans:
-                    continue
+        return result
 
-                first_x = spans[0]["bbox"][0]
-                text_parts = [span["text"].strip() for span in spans if span["text"].strip()]
-                line_text = " ".join(text_parts).strip()
+    def indent_text_to_format_text(self, ind_text_arr):
+        min_x = math.inf
+        for x, y in ind_text_arr:
+            if (x < min_x):
+                min_x = x
+        
+        result = ""
+        for x, y in ind_text_arr:
+            if (x > min_x):
+                result += "<list>" + y + "</list>\n"
+            else:
+                result += y + "\n"
+        
+        return result
 
-                # Heuristic: if indented (x > 50) but not far (x < 150), treat as list item
-                if 50 < first_x < 200 and len(line_text.split()) < 30:
-                    full_text += "- " + line_text + "\n"
-                else:
-                    full_text += line_text + "\n"
-        full_text += "\n"
-
-    return full_text.strip()
-
-def inspect_bullet_spans(pdf_path):
-    """Prints all span texts in the PDF for bullet detection debugging."""
-    doc = fitz.open(pdf_path)
-
-    for page_number, page in enumerate(doc):
-        print(f"\n--- Page {page_number + 1} ---")
-        blocks = page.get_text("dict")["blocks"]
-        for block in blocks:
-            if "lines" not in block:
-                continue
-            for line in block["lines"]:
-                for span in line.get("spans", []):
-                    print(repr(span["text"]))
+    def pdf_pure_text(self):
+        ind = self.extract_with_indent()
+        text = self.indent_text_to_format_text(ind)
+        return text
+    
 
 # Example usage
-if __name__ == "__main__":
-    pdf_path = "test.pdf"  
-    # text = extract_from_pdf(pdf_path)
-    # print(text)
+# if __name__ == "__main__":
+#     pdf_path = "test.pdf"  
+#     ind = extract_with_indent(pdf_path)
+#     text = indent_text_to_format_text(ind)
+#     print(text)
     # print(repr(text))
-
-    inspect_bullet_spans(pdf_path)

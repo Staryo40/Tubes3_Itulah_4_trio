@@ -2,7 +2,7 @@ from search_algorithm import *
 import time
 
 # Asumsi cv_dic
-# id : {"name": val, "text": val, "path": val}
+# id : {"name": val, "dob": val, "text": val, "path": val}
 
 # Struktur Result
 # {

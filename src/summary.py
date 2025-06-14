@@ -1,8 +1,13 @@
 import re
 import json
-from pdf_text import extract_text_from_pdf
+from enum import Enum
+from pdf_text import *
 
 header_dic = "header_dictionary.json"
+
+class text_format(Enum):
+    List = 1
+    Bullet = 2
 
 class cv_summary_generator:
     def __init__(self, text):
@@ -38,31 +43,80 @@ class cv_summary_generator:
 
         return result
     
-text = extract_text_from_pdf("test.pdf")
-gen = cv_summary_generator(text)
-sum = gen.get_summary()
-for header, content in sum.items():
-    lines = [line.strip() for line in content.strip().split("\n") if line.strip()]
-    comma_items = [item.strip() for item in content.split(",") if item.strip()]
+    def raw_summary_filter(self, summary_dic):
+        filtered = {}
+        for header, content in summary_dic.items():
+            normalized = re.sub(r'\n{2,}', '\n', content.strip()) # get rid of extra new line
+            normalized = re.sub(r'</list>\n<list>[a-z]', ' ', normalized.strip()) # combine long list element
+            if '<list>' not in normalized and ',' in normalized: # make bullets
+                items = [item.strip() for item in normalized.strip(", ").split(',') if item.strip()]
+                word_counts = [len(item.split()) for item in items]
+                if all(count <= 5 for count in word_counts):
+                    normalized = '\n'.join(f"<bullet>{item}</bullet>" for item in items)
+            filtered[header] = normalized
 
-    # Case 1: content is likely a flat comma-separated list
-    if len(comma_items) >= 5 and len(lines) == 1:
-        print(f"=== {header.upper()} ===")
-        for item in comma_items:
-            print(f"- {item}")
-        print("\n")
+        return filtered     
+    
+    def final_summary_filter(self, summary_dic):
+        filtered = {}
+        for header, content in summary_dic.items():
+            if '<bullet>' not in content:
+                filtered[header] = self.split_non_list_chunks(content)
+                filtered_arr = []
+                for text in filtered[header]:
+                    filtered_arr.append(re.sub(r'\n', ', ', text))
+                filtered[header] = {"type": text_format.List, "content": filtered_arr}
+            else:
+                bullet_arr = self.bullet_block_to_array(content)
+                filtered[header] = {"type": text_format.List, "content": bullet_arr}
+        return filtered
 
-    # Case 2: content is a multi-line list (each line is a separate item)
-    elif len(lines) >= 3 and all(len(line) < 120 for line in lines):
-        print(f"=== {header.upper()} ===")
-        for item in lines:
-            print(f"- {item}")
-        print("\n")
+    def split_non_list_chunks(self, content):
+        lines = content.strip().split('\n')
 
-    # Otherwise, print normally as a paragraph
-    else:
-        print(f"=== {header.upper()} ===")
-        print(content)
-        print("\n")
+        if all(line.strip().startswith("<list>") and line.strip().endswith("</list>") for line in lines if line.strip()):
+            return [re.sub(r"</?list>", "", line.strip()) for line in lines if line.strip()]
+    
+        result = []
+        buffer = []
+
+        for line in lines:
+            line = line.strip()
+            if line.startswith("<list>") and line.endswith("</list>"):
+                # When we hit a <list>, treat it as a delimiter:
+                if buffer:
+                    joined = "\n".join(buffer).strip()
+                    if joined:
+                        result.append(joined)
+                        buffer = []  # reset after chunk
+                # Else: ignore list content entirely
+            else:
+                buffer.append(line)
+
+        if buffer:
+            joined = "\n".join(buffer).strip()
+            if joined:
+                result.append(joined)
+
+        return result
+    
+    def bullet_block_to_array(self, bullet_block):
+        return re.findall(r'<bullet>(.*?)</bullet>', bullet_block.strip(), re.DOTALL)
+    
+    def get_final_summary(self):
+        summary = self.get_summary()
+        raw_filtered = self.raw_summary_filter(summary)
+        final_filtered = self.final_summary_filter(raw_filtered)
+
+        return final_filtered
+
+# pdf = pdf_extractor("test.pdf")
+# text = pdf.pdf_pure_text()
+# gen = cv_summary_generator(text)
+# sum = gen.final_summary_filter(gen.raw_summary_filter(gen.get_summary()))
+# for header, content in sum.items():
+#     print(f"=== {header.upper()} ===")
+#     print(content)
+#     print("")
     
     
