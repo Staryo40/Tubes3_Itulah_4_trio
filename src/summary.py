@@ -3,7 +3,7 @@ import json, os
 from enum import Enum
 from pdf_text import *
 
-header_dic = "src/header_dictionary.json"
+header_dic = "data/header_dictionary.json"
 
 class text_format(Enum):
     List = 1

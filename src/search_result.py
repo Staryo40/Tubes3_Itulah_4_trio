@@ -5,10 +5,20 @@ from summary import *
 import os
 import time
 
-# Asumsi cv_dic
-# id : {"name": val, "dob": val, "address": val, "phone": val, "role": val, "path": val}
+# cv_dic structure
+# applicant_id: {
+#     "first_name": str,
+#     "last_name": str,
+#     "date_of_birth": date,
+#     "email": str,
+#     "phone_number": str,
+#     "address": str,
+#     "detail_id": int,
+#     "application_role": str,
+#     "cv_path": str,  # hanya nama file: "12345.pdf"
+#   }, ...
 
-# Struktur Result
+# resut structure
 # {
 #   "time": val,
 #   "cv_num": val, -> total number of cv scanned
@@ -16,6 +26,7 @@ import time
 #              "cv_id": {
 #                        "name": val,
 #                        "dob": val,
+#                        "email": val,
 #                        "address": val,
 #                        "phone": val,
 #                        "role": val,
@@ -50,7 +61,7 @@ class search_result:
         self.match_algo = match_algo
     
     def process_cv(self, id, cv_data):
-        full_path = os.path.join(self.root, cv_data["path"])
+        full_path = os.path.join(self.root, cv_data["cv_path"])
         pdf = pdf_extractor(full_path)
         raw_text = pdf.extract_raw_from_pdf()
         matcher = multiple_keyword_search(raw_text, self.keywords)
@@ -65,12 +76,13 @@ class search_result:
         sum_dic = sum_gen.get_final_summary()
 
         return id, {
-            "name": cv_data["name"],
-            "dob": cv_data["dob"],
+            "name": cv_data["first_name"] + " " + cv_data["last_name"],
+            "dob": cv_data["date_of_birth"],
             "address": cv_data["address"],
-            "phone": cv_data["phone"],
-            "role": cv_data["role"],
-            "path": cv_data["path"],
+            "email": cv_data["email"],
+            "phone": cv_data["phone_number"],
+            "role": cv_data["application_role"],
+            "path": cv_data["cv_path"],
             "total_match": total_match,
             "exact_match": exact_match,
             "fuzzy_match": fuzzy_match,
@@ -81,11 +93,15 @@ class search_result:
     def search_result(self):
         result = {"time": 0, "cv_num": len(self.cv_dic), "result": {}}
 
+        cv_transformed_dic = {}
+        for key, content in self.cv_dic.items():
+            cv_transformed_dic[content["detail_id"]] = content
+
         start = time.time()
 
         cv_result = {}
         with ThreadPoolExecutor() as executor:
-            futures = [executor.submit(self.process_cv, id, cv_data) for id, cv_data in self.cv_dic.items()]
+            futures = [executor.submit(self.process_cv, id, cv_data) for id, cv_data in cv_transformed_dic.items()]
             for future in as_completed(futures):
                 id, res = future.result()
                 cv_result[str(id)] = res
@@ -118,7 +134,7 @@ cv_dic = {
 }
 
 if __name__ == "__main__":     
-    data_path = os.path.join(os.getcwd(), "data")
+    data_path = os.path.join(os.getcwd(), "data", "cv")
     res_gen = search_result(data_path, cv_dic, ["managed", "efficiency", "Presenter"], 1, 2, levenshtein_method.WORD, matching_algorithm.BM)
     result = res_gen.search_result()
     for key, content in result["result"].items():

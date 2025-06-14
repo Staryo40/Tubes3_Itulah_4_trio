@@ -1,7 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
 from typing import List, Dict, Optional
-from config import DB_CONFIG
+from .config import DB_CONFIG
 
 def create_connection():
     """Buat koneksi database"""
