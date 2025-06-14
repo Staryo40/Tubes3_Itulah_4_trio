@@ -1,4 +1,7 @@
-# BIKIN APLIKASI UNTUK MEMPERCEPAT PENOLAKAN MAGANG ?!?
+# Tugas Besar 3 Strategi Algoritma 2025  
+<p align="center">
+<img src="https://media1.tenor.com/m/x8v1oNUOmg4AAAAd/rickroll-roll.gif" alt="Application interface" width="700"/>
+</p>
 ## ATS Application using Exact String Matching and Fuzzy String Matching
 There are three main exact string matching algorithm used in this program  
 1. Knuth Morris Pratt (KMP) Algorithm: Exact string matching algorithm that compares from left to right, with the addition of the border function that counts the biggest prefix that exist at every character of the pattern being searched to save on redundant comparison
