@@ -1,117 +1,144 @@
-from typing import List, Dict, Any
+from typing import Dict, Any, List
+from db import get_cv_list
+from config import CV_DIR
 import os
-from db import get_cv_list, test_connection
-from scrapper import get_cv_text, get_cv_file_path
-from extractor import extract_all_info
 
-def get_all_cvs():
+def get_data() -> Dict[int, Dict[str, Any]]:
     try:
         raw_data = get_cv_list()
-        cv_data = []
-        
-        for cv in raw_data:
-            cv_info = {
-                "detail_id": cv["detail_id"],
-                "cv_path": cv["cv_path"],
-                "applicant_id": cv["applicant_id"],
-                "name": f"{cv['first_name']} {cv['last_name']}",
-                "email": cv["email"],
-                "role": cv["application_role"]
-            }
-            cv_data.append(cv_info)
-        
-        return cv_data
+        result = {}
+        for row in raw_data:
+            applicant_id = row["applicant_id"]
+            data = {k: v for k, v in row.items() if k != "applicant_id"}
+            result[applicant_id] = data
+        return result
     except Exception as e:
+        print(f"Error getting data: {e}")
+        return {}
+
+def get_cv_path(cv_filename: str) -> str:
+    return os.path.join(CV_DIR, cv_filename)
+
+def get_applicant_by_id(applicant_id: int) -> Dict[str, Any]:
+    """
+    Get applicant data by ID
+    Args:
+        applicant_id: ID applicant
+    Returns:
+        Dict berisi data applicant atau empty dict jika tidak ditemukan
+    """
+    data = get_data()
+    return data.get(applicant_id, {})
+
+def get_all_cv_files() -> List[str]:
+    """
+    Get list of all CV files from directory
+    Returns:
+        List nama file CV yang ada di direktori
+    """
+    try:
+        if not os.path.exists(CV_DIR):
+            print(f"CV directory tidak ditemukan: {CV_DIR}")
+            return []
+        
+        cv_files = [f for f in os.listdir(CV_DIR) if f.lower().endswith('.pdf')]
+        return sorted(cv_files)
+    except Exception as e:
+        print(f"Error getting CV files: {e}")
         return []
 
-def get_cv_content(cv_path):
-    try:
-        return get_cv_text(cv_path)
-    except Exception as e:
-        return ""
-
-def get_cv_summary(cv_path):
-    try:
-        cv_list = get_all_cvs()
-        db_info = None
-        
-        for cv in cv_list:
-            if cv["cv_path"] == cv_path:
-                db_info = cv
-                break
-        
-        cv_text = get_cv_content(cv_path)
-        extracted = extract_all_info(cv_text) if cv_text else {}
-        
-        summary = {
-            "applicant_name": db_info["name"] if db_info else extracted.get("name", "Unknown"),
-            "email": db_info["email"] if db_info else extracted.get("email", ""),
-            "role": db_info["role"] if db_info else "Unknown",
-            "phone": extracted.get("phone", ""),
-            "skills": extracted.get("skills", []),
-            "education": extracted.get("education", []),
-            "experience": extracted.get("experience", []),
-            "summary": extracted.get("summary", ""),
-            "cv_path": cv_path
-        }
-        
-        return summary
-    except Exception as e:
-        return create_empty_summary(cv_path)
-
-def get_cv_info(cv_path):
-    try:
-        cv_text = get_cv_content(cv_path)
-        if cv_text:
-            return extract_all_info(cv_text)
-        return {"success": False}
-    except Exception as e:
-        return {"success": False}
-
-def get_cv_file(cv_path):
-    try:
-        return get_cv_file_path(cv_path)
-    except Exception as e:
-        return ""
-
-def check_system():
-    from config import CV_DIR
+def validate_cv_paths() -> Dict[str, bool]:
+    """
+    Validate semua CV path yang ada di database
+    Returns:
+        Dict dengan cv_path sebagai key dan boolean (exists) sebagai value
+    """
+    data = get_data()
+    results = {}
     
-    status = {
-        "database_ok": False,
-        "cv_dir_exists": False,
-        "total_cvs": 0,
-        "system_ready": False
-    }
+    for applicant_id, info in data.items():
+        cv_path = info.get('cv_path', '')
+        full_path = get_cv_path(cv_path)
+        exists = os.path.exists(full_path)
+        results[cv_path] = exists
+        
+        if not exists:
+            print(f"⚠️  CV not found: {cv_path} (Applicant ID: {applicant_id})")
     
-    try:
-        status["database_ok"] = test_connection()
-        status["cv_dir_exists"] = os.path.exists(CV_DIR)
-        
-        if status["database_ok"]:
-            cv_list = get_all_cvs()
-            status["total_cvs"] = len(cv_list)
-        
-        status["system_ready"] = (
-            status["database_ok"] and 
-            status["cv_dir_exists"] and 
-            status["total_cvs"] > 0
-        )
-        
-    except Exception as e:
-        pass
-    
-    return status
+    return results
 
-def create_empty_summary(cv_path):
+def get_stats() -> Dict[str, Any]:
+    """
+    Returns:
+        Dict berisi statistik data
+    """
+    data = get_data()
+    cv_files = get_all_cv_files()
+    validation = validate_cv_paths()
+    
+    valid_cvs = sum(1 for exists in validation.values() if exists)
+    invalid_cvs = len(validation) - valid_cvs
+    
+    roles = {}
+    for info in data.values():
+        role = info.get('application_role', 'Unknown')
+        roles[role] = roles.get(role, 0) + 1
+    
     return {
-        "applicant_name": "Error",
-        "email": "",
-        "role": "",
-        "phone": "",
-        "skills": [],
-        "education": [],
-        "experience": [],
-        "summary": "",
-        "cv_path": cv_path
+        'total_applicants': len(data),
+        'total_cv_files_in_dir': len(cv_files),
+        'valid_cv_paths': valid_cvs,
+        'invalid_cv_paths': invalid_cvs,
+        'roles_distribution': roles,
+        'cv_directory': CV_DIR,
+        'cv_dir_exists': os.path.exists(CV_DIR)
     }
+
+"""
+Format output get_data():
+{
+  applicant_id: {
+    "first_name": str,
+    "last_name": str,
+    "date_of_birth": date,
+    "email": str,
+    "phone_number": str,
+    "address": str,
+    "detail_id": int,
+    "application_role": str,
+    "cv_path": str,  # hanya nama file: "12345.pdf"
+  }, ...
+}
+
+Usage examples:
+- data = get_data()
+- applicant = get_applicant_by_id(1)
+- full_cv_path = get_cv_path(applicant['cv_path'])
+- stats = get_stats()
+"""
+
+if __name__ == "__main__":
+    print("=== Testing Integration ===")
+    
+    data = get_data()
+    print(f"Total applicants: {len(data)}")
+    
+    if data:
+        first_id = list(data.keys())[0]
+        first_applicant = data[first_id]
+        print(f"\nFirst applicant (ID {first_id}):")
+        for key, value in first_applicant.items():
+            print(f"  {key}: {value}")
+        
+        cv_path = first_applicant.get('cv_path', '')
+        if cv_path:
+            full_path = get_cv_path(cv_path)
+            exists = os.path.exists(full_path)
+            print(f"\nCV Path: {cv_path}")
+            print(f"Full Path: {full_path}")
+            print(f"Exists: {exists}")
+    
+    print(f"\n=== Statistics ===")
+    stats = get_stats()
+    for key, value in stats.items():
+        print(f"{key}: {value}")
