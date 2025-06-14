@@ -1,5 +1,7 @@
-import re
 from local_enum import *
+from .aho_corasick import AhoCorasickSearch
+import re
+
 
 class SearchAlgorithm:
     def __init__(self, text, keyword):
@@ -265,24 +267,47 @@ class MultipleKeywordSearch:
     def keywords_search_result(self, lev_threshold, lev_method: LevenshteinMethod, algo: MatchingAlgorithm):
         "Get matching results from each keyword, gets both exact and fuzzy results if exact is not found"
         result = {}
-        for word in self.keywords:
-            search = SearchAlgorithm(self.text, word)
+        if algo == MatchingAlgorithm.AC:
+            aho = AhoCorasickSearch(self.text, self.keywords)
+            aho_res = aho.ah_search_indexes()
 
-            exact = search.exact_search_indexes(algo)
-            if (exact and len(exact) > 0):
-                result[word] = { "type": KeywordResult.Exact,
-                                 "occurrence": len(exact) }
-                continue
-            
-            fuzzy = search.similar_search_indexes(lev_threshold, lev_method)
-            if (fuzzy and len(fuzzy) > 0):
-                result[word] = { "type": KeywordResult.Similar,
-                                 "occurrence": len(fuzzy) }
-                continue
-            
-            if (len(fuzzy) <= 0 and len(exact) <= 0):
-                result[word] = { "type": KeywordResult.NotFound,
-                                "occurrence": 0 }
+            for key, indexes in aho_res.items():
+                if len(indexes) == 0:
+                    search = SearchAlgorithm(self.text, key)
+                    fuzzy = search.similar_search_indexes(lev_threshold, lev_method)
+                    if fuzzy:
+                        result[key] = {
+                            "type": KeywordResult.Similar,
+                            "occurrence": len(fuzzy)
+                        }
+                    else:
+                        result[key] = {
+                            "type": KeywordResult.NotFound,
+                            "occurrence": 0
+                        }
+                else:
+                    result[key] =  { "type": KeywordResult.Exact,
+                                    "occurrence": len(indexes) }
+            print(result)
+        else:
+            for word in self.keywords:
+                search = SearchAlgorithm(self.text, word)
+
+                exact = search.exact_search_indexes(algo)
+                if (exact and len(exact) > 0):
+                    result[word] = { "type": KeywordResult.Exact,
+                                    "occurrence": len(exact) }
+                    continue
+                
+                fuzzy = search.similar_search_indexes(lev_threshold, lev_method)
+                if (fuzzy and len(fuzzy) > 0):
+                    result[word] = { "type": KeywordResult.Similar,
+                                    "occurrence": len(fuzzy) }
+                    continue
+                
+                if (len(fuzzy) <= 0 and len(exact) <= 0):
+                    result[word] = { "type": KeywordResult.NotFound,
+                                    "occurrence": 0 }
         
         return result
 
