@@ -1,10 +1,6 @@
--- Skema basis data untuk ATS (Applicant Tracking System)
-
--- Membuat database jika belum ada
 CREATE DATABASE IF NOT EXISTS ats_system;
 USE ats_system;
 
--- Menyimpan data identitas inti pelamar
 CREATE TABLE ApplicantProfile (
     applicant_id INT NOT NULL AUTO_INCREMENT,
     first_name VARCHAR(50) NOT NULL,
@@ -19,7 +15,6 @@ CREATE TABLE ApplicantProfile (
     INDEX idx_email (email)
 );
 
--- Menyimpan detail lamaran, termasuk path file CV
 CREATE TABLE ApplicationDetail (
     detail_id INT NOT NULL AUTO_INCREMENT,
     applicant_id INT NOT NULL,
@@ -34,7 +29,6 @@ CREATE TABLE ApplicationDetail (
     INDEX idx_application_role (application_role)
 );
 
--- Menyimpan data sesi pencarian dan performa algoritma
 CREATE TABLE SearchSession (
     session_id INT NOT NULL AUTO_INCREMENT,
     keywords TEXT NOT NULL,
@@ -50,7 +44,6 @@ CREATE TABLE SearchSession (
     INDEX idx_algorithm_timestamp (algorithm_used, search_timestamp)
 );
 
--- Menyediakan view untuk query efisien identitas dan aplikasi
 CREATE VIEW ApplicantApplicationView AS
 SELECT 
     ap.applicant_id,
