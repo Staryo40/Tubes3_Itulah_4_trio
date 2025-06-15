@@ -32,11 +32,11 @@ After putting your mysql password, change the file name from ".envi" to ".env"
 ### Installing Python Libraries
 ```bash
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate # or "source venv/Scripts/activate" on Windows
 pip install -r requirements.txt
 ```
 
-### Downloading dataset
+### Downloading Kaggle Dataset
 ```bash
 python src/download_dataset.py 
 ```
