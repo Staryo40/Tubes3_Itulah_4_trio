@@ -15,6 +15,8 @@ class MainController:
         self.data_path = data_path
         self.connect_signals()
         self.results = {}
+        self.data = data
+        self.data_path = data_path
         # self.initialize()
     
     def connect_signals(self):
@@ -38,6 +40,7 @@ class MainController:
         res_gen = SearchResult(self.data_path, self.data, keywords, top_matches, global_levenshtein_threshold, LevenshteinMethod.WORD, algorithm)
         self.results = res_gen.search_result()
         # print(f"results: {self.results}")
+        self.view.setup_right_panel_content(self.results['cv_num'], self.results['time'])
         self.update_view()
     
     def handle_algorithm_change(self, algorithm_state):
@@ -127,15 +130,14 @@ class MainController:
     def show_file_not_found_message(self, file_path):
         """Show message when file is not found"""
         print(f"File not found: {file_path}")
-        print("Note: This is sample data. In real application, this would be actual file paths.")
         
         # You can implement a proper message dialog here if needed
-        # from PyQt5.QtWidgets import QMessageBox
-        # msg = QMessageBox()
-        # msg.setIcon(QMessageBox.Warning)
-        # msg.setWindowTitle("File Not Found")
-        # msg.setText(f"Could not find file:\n{file_path}")
-        # msg.exec_()
+        from PyQt5.QtWidgets import QMessageBox
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowTitle("File Not Found")
+        msg.setText(f"Could not find file:\n{file_path}")
+        msg.exec_()
     
     def show_error_message(self, message):
         """Show error message"""

@@ -62,10 +62,18 @@ class MainView(QMainWindow):
         self.result_layout.setContentsMargins(20, 20, 20, 20)
         self.result_layout.setSpacing(15)
 
-        self.result_title = QLabel("Result")
+    def setup_right_panel_content(self, result_count, execution_time):
+        # Main title
+        self.result_title = QLabel("Results")
         self.result_title.setAlignment(Qt.AlignCenter)
-        self.result_title.setStyleSheet("font-size: 35px; font-weight: bold;")
+        self.result_title.setStyleSheet("font-size: 35px; font-weight: bold; color: black;")
         self.result_layout.addWidget(self.result_title)
+
+        # Subtitle with result count and execution time
+        self.result_subtitle = QLabel(f"{result_count} CVs scanned in {execution_time:.2f}s")
+        self.result_subtitle.setAlignment(Qt.AlignCenter)
+        self.result_subtitle.setStyleSheet("font-size: 14px; color: #666666; margin-top: 5px;")
+        self.result_layout.addWidget(self.result_subtitle)
 
         self.cards_container = QWidget()
         self.cards_layout = QGridLayout(self.cards_container)
@@ -228,6 +236,8 @@ class MainView(QMainWindow):
         spacer.setFixedHeight(20)
         layout.addWidget(spacer)
 
+
+
     def toggle_algorithm(self, event):
         self.toggle_state = (self.toggle_state + 1) % 3
         
@@ -341,7 +351,6 @@ class MainView(QMainWindow):
             }
             QFrame:hover {
                 background-color: #d6d6d6;
-                border: 2px solid #a0a0a0;
                 cursor: pointer;
             }
             QFrame:hover QLabel {

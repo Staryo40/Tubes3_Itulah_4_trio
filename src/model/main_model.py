@@ -7,7 +7,7 @@
 #                        "name": val,
 #                        "dob": val,
 #                        "address": val,
-#                        "phone": val,
+#                        "phone_number": val,
 #                        "role": val,
 #                        "path": val,
 #                        "total_match": val,
@@ -24,7 +24,6 @@
 #              }
 # }
 
-
 class MainModel:
     def __init__(self):
         self.candidates_data = []
@@ -40,9 +39,9 @@ class MainModel:
                 1: {
                     "name": "Farhan",
                     "birthdate": "1995-05-15",
-                    "Address": "Jl. Merdeka No. 10, Jakarta",
-                    "Phone": "0812-3456-7890",
-                    "matches": 4,
+                    "address": "Jl. Merdeka No. 10, Jakarta",
+                    "phone_number": "0812-3456-7890",
+                    "total_match": 4,
                     "search_res": {
                         "React": {"type": "exact", "occurrence": 2},
                         "Express": {"type": "fuzzy", "occurrence": 1},
@@ -58,9 +57,9 @@ class MainModel:
                 2: {
                     "name": "Aulia",
                     "birthdate": "1994-07-20",
-                    "Address": "Jl. Sudirman No. 50, Bandung",
-                    "Phone": "0813-9876-5432",
-                    "matches": 3,
+                    "address": "Jl. Sudirman No. 50, Bandung",
+                    "phone_number": "0813-9876-5432",
+                    "total_match": 3,
                     "search_res": {
                         "JavaScript": {"type": "exact", "occurrence": 2},
                         "Node.js": {"type": "fuzzy", "occurrence": 1},
@@ -76,9 +75,9 @@ class MainModel:
                 3: {
                     "name": "Rizky",
                     "birthdate": "1996-09-12",
-                    "Address": "Jl. Diponegoro No. 21, Surabaya",
-                    "Phone": "0811-2233-4455",
-                    "matches": 5,
+                    "address": "Jl. Diponegoro No. 21, Surabaya",
+                    "phone_number": "0811-2233-4455",
+                    "total_match": 5,
                     "search_res": {
                         "Python": {"type": "exact", "occurrence": 3},
                         "Django": {"type": "exact", "occurrence": 1},
@@ -94,9 +93,9 @@ class MainModel:
                 4: {
                     "name": "Sarah",
                     "birthdate": "1993-03-08",
-                    "Address": "Jl. Gatot Subroto No. 5, Medan",
-                    "Phone": "0814-5678-9101",
-                    "matches": 2,
+                    "address": "Jl. Gatot Subroto No. 5, Medan",
+                    "phone_number": "0814-5678-9101",
+                    "total_match": 2,
                     "search_res": {
                         "C++": {"type": "exact", "occurrence": 2},
                         "OpenGL": {"type": "fuzzy", "occurrence": 1}
@@ -111,9 +110,9 @@ class MainModel:
                 5: {
                     "name": "Andi",
                     "birthdate": "1992-11-11",
-                    "Address": "Jl. Ahmad Yani No. 99, Malang",
-                    "Phone": "0815-1122-3344",
-                    "matches": 6,
+                    "address": "Jl. Ahmad Yani No. 99, Malang",
+                    "phone_number": "0815-1122-3344",
+                    "total_match": 6,
                     "search_res": {
                         "Java": {"type": "exact", "occurrence": 3},
                         "Spring": {"type": "exact", "occurrence": 2},
@@ -129,9 +128,9 @@ class MainModel:
                 6: {
                     "name": "Nina",
                     "birthdate": "1997-06-14",
-                    "Address": "Jl. Imam Bonjol No. 45, Yogyakarta",
-                    "Phone": "0816-7890-1234",
-                    "matches": 4,
+                    "address": "Jl. Imam Bonjol No. 45, Yogyakarta",
+                    "phone_number": "0816-7890-1234",
+                    "total_match": 4,
                     "search_res": {
                         "Ruby": {"type": "exact", "occurrence": 2},
                         "Rails": {"type": "fuzzy", "occurrence": 1},
@@ -147,9 +146,9 @@ class MainModel:
                 7: {
                     "name": "Budi",
                     "birthdate": "1990-01-22",
-                    "Address": "Jl. Pemuda No. 88, Semarang",
-                    "Phone": "0817-4444-5555",
-                    "matches": 3,
+                    "address": "Jl. Pemuda No. 88, Semarang",
+                    "phone_number": "0817-4444-5555",
+                    "total_match": 3,
                     "search_res": {
                         "PHP": {"type": "exact", "occurrence": 2},
                         "Laravel": {"type": "fuzzy", "occurrence": 1}
@@ -164,9 +163,9 @@ class MainModel:
                 8: {
                     "name": "Siti",
                     "birthdate": "1998-04-18",
-                    "Address": "Jl. Gajah Mada No. 56, Bali",
-                    "Phone": "0818-2222-6666",
-                    "matches": 5,
+                    "address": "Jl. Gajah Mada No. 56, Bali",
+                    "phone_number": "0818-2222-6666",
+                    "total_match": 5,
                     "search_res": {
                         "Kotlin": {"type": "exact", "occurrence": 3},
                         "Android": {"type": "fuzzy", "occurrence": 2}
@@ -214,11 +213,14 @@ class MainModel:
             return True
         return False
     
-    def search_candidates(self, keywords, algorithm, top_matches):
+    def search_candidates(self, keywords, algorithm, top_matches, data, data_path):
         """Perform search with given parameters"""
         # Implement actual search logic here
         print(f"Searching for: {keywords} using {algorithm}, top {top_matches} matches")
         # For now, just return all data
-        return self.load_sample_data()
+        res_gen = search_result(data_path, data, keywords, top_matches, 2, levenshtein_method.WORD, matching_algorithm.BM)
+        result = res_gen.search_result()
+        print(f"result: {result}")
+        return result  
 
 
