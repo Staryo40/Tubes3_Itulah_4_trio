@@ -4,7 +4,6 @@ from typing import List, Dict, Optional
 from .config import DB_CONFIG
 
 def create_connection():
-    """Buat koneksi database"""
     try:
         return mysql.connector.connect(**DB_CONFIG)
     except Error as e:
@@ -12,7 +11,6 @@ def create_connection():
         return None
 
 def test_connection():
-    """Test koneksi database"""
     conn = create_connection()
     if conn and conn.is_connected():
         conn.close()
@@ -22,7 +20,6 @@ def test_connection():
 # ============= APPLICANT OPERATIONS =============
 
 def add_applicant(first, last, dob, phone, address):
-    """Tambah pelamar baru - UPDATED: Hapus email (tidak ada di tubes3_seeding.sql)"""
     conn = create_connection()
     if not conn:
         return None
@@ -42,7 +39,6 @@ def add_applicant(first, last, dob, phone, address):
         conn.close()
 
 def get_applicant(applicant_id):
-    """Ambil data pelamar"""
     conn = create_connection()
     if not conn:
         return None
@@ -58,7 +54,6 @@ def get_applicant(applicant_id):
         conn.close()
 
 def get_all_applicants():
-    """Ambil semua pelamar"""
     conn = create_connection()
     if not conn:
         return []
@@ -76,7 +71,6 @@ def get_all_applicants():
 # ============= APPLICATION OPERATIONS =============
 
 def add_application(applicant_id, role, cv_path):
-    """Tambah detail lamaran"""
     conn = create_connection()
     if not conn:
         return None
@@ -96,10 +90,6 @@ def add_application(applicant_id, role, cv_path):
         conn.close()
 
 def get_cv_list():
-    """
-    Ambil daftar CV, hasil JOIN ApplicantProfile dan ApplicationDetail,
-    field sesuai skema SQL terbaru - UPDATED: Hapus email karena tidak ada di tubes3_seeding.sql
-    """
     conn = create_connection()
     if not conn:
         return []
@@ -131,7 +121,6 @@ def get_cv_list():
 # ============= UTILITY =============
 
 def get_stats():
-    """Ambil statistik database"""
     conn = create_connection()
     if not conn:
         return {}
@@ -169,7 +158,6 @@ from typing import List, Dict, Optional
 from .config import DB_CONFIG
 
 def create_connection():
-    """Buat koneksi database"""
     try:
         return mysql.connector.connect(**DB_CONFIG)
     except Error as e:
@@ -177,7 +165,6 @@ def create_connection():
         return None
 
 def test_connection():
-    """Test koneksi database"""
     conn = create_connection()
     if conn and conn.is_connected():
         conn.close()
@@ -188,7 +175,6 @@ def test_connection():
 
 @with_encryption(encrypt_input=True)
 def add_applicant(first, last, dob, phone, address):
-    """Tambah pelamar baru dengan enkripsi otomatis"""
     conn = create_connection()
     if not conn:
         return None
@@ -209,7 +195,6 @@ def add_applicant(first, last, dob, phone, address):
 
 @with_encryption(decrypt_output=True)
 def get_applicant(applicant_id):
-    """Ambil data pelamar dengan dekripsi otomatis"""
     conn = create_connection()
     if not conn:
         return None
@@ -226,7 +211,6 @@ def get_applicant(applicant_id):
 
 @with_encryption(decrypt_output=True)
 def get_applicant_by_id(applicant_id):
-    """Ambil pelamar berdasarkan ID dengan dekripsi otomatis"""
     conn = create_connection()
     if not conn:
         return None
@@ -243,7 +227,6 @@ def get_applicant_by_id(applicant_id):
 
 @with_encryption(decrypt_list=True)
 def get_all_applicants():
-    """Ambil semua pelamar dengan dekripsi otomatis"""
     conn = create_connection()
     if not conn:
         return []
@@ -261,7 +244,6 @@ def get_all_applicants():
 # ============= APPLICATION OPERATIONS =============
 
 def add_application(applicant_id, role, cv_path):
-    """Tambah detail lamaran"""
     conn = create_connection()
     if not conn:
         return None
@@ -282,9 +264,6 @@ def add_application(applicant_id, role, cv_path):
 
 @with_encryption(decrypt_list=True)
 def get_cv_list():
-    """
-    Ambil daftar CV dengan JOIN dan dekripsi otomatis
-    """
     conn = create_connection()
     if not conn:
         return []

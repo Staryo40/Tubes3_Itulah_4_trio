@@ -5,49 +5,6 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import os
 import time
 
-# cv_dic structure
-# applicant_id: {
-#     "first_name": str,
-#     "last_name": str,
-#     "date_of_birth": date,
-#     "phone_number": str,
-#     "address": str,
-#     "detail_id": int,
-#     "application_role": str,
-#     "cv_path": str,  # hanya nama file: "12345.pdf"
-#   }, ...
-
-# resut structure
-# {
-#   "time": val,
-#   "cv_num": val, -> total number of cv scanned
-#   "result": {
-#              "cv_id": {
-#                        "name": val,
-#                        "dob": val,
-#                        "address": val,
-#                        "phone": val,
-#                        "role": val,
-#                        "path": val,
-#                        "total_match": val,
-#                        "exact_match": val,
-#                        "fuzzy_match": val,
-#                        "search_res": {
-#                                       "keyword": { 
-#                                                    "type": tval, -> tval = keyword_result ENUM
-#                                                    "occurrence": val
-#                                                  }
-#                                      },
-#                        "summary": {
-#                                    "header": {
-#                                               "type": tval, -> tval = text_format ENUM
-#                                               "content": val (array)
-#                                              }
-#                                   }
-#                       }
-#              }
-# }
-
 class SearchResult:
     def __init__(self, root_data_dir, cv_dic, keywords, top_n, lev_threshold, lev_method: LevenshteinMethod, match_algo: MatchingAlgorithm):
         self.root = root_data_dir

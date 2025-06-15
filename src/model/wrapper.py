@@ -55,7 +55,6 @@ class EncryptedDatabaseWrapper:
             decrypted_item = self.decrypt_after_load(item)
             decrypted_list.append(decrypted_item)
             
-            # Check if decryption was successful
             sensitive_fields = ['first_name', 'last_name', 'address', 'phone_number']
             decrypted = False
             for field in sensitive_fields:
@@ -70,11 +69,9 @@ class EncryptedDatabaseWrapper:
         print(f"Decrypted {successful_decryptions}/{len(encrypted_list)} records successfully")
         return decrypted_list
 
-# Global instance
 db_encryption_wrapper = EncryptedDatabaseWrapper()
 
 def with_encryption(encrypt_input=False, decrypt_output=False, decrypt_list=False):
-    """Decorator untuk otomatis encrypt/decrypt data"""
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -83,10 +80,8 @@ def with_encryption(encrypt_input=False, decrypt_output=False, decrypt_list=Fals
                 encrypted_data = db_encryption_wrapper.encrypt_before_save(args[0])
                 args = (encrypted_data,) + args[1:]
             
-            # Execute function
             result = func(*args, **kwargs)
             
-            # Handle output decryption
             if result is not None:
                 if decrypt_list and isinstance(result, list):
                     result = db_encryption_wrapper.decrypt_list(result)
@@ -97,7 +92,6 @@ def with_encryption(encrypt_input=False, decrypt_output=False, decrypt_list=Fals
         return wrapper
     return decorator
 
-# Convenience functions
 def encrypt_applicant_profile(profile_data: Dict[str, Any]) -> Dict[str, Any]:
     return db_encryption_wrapper.encrypt_before_save(profile_data)
 

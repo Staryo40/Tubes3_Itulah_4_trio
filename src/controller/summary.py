@@ -106,14 +106,3 @@ class CVSummaryGenerator:
         final_filtered = self.final_summary_filter(raw_filtered)
 
         return final_filtered
-
-# pdf = pdf_extractor("test.pdf")
-# text = pdf.pdf_pure_text()
-# gen = cv_summary_generator(text)
-# sum = gen.final_summary_filter(gen.raw_summary_filter(gen.get_summary()))
-# for header, content in sum.items():
-#     print(f"=== {header.upper()} ===")
-#     print(content)
-#     print("")
-    
-    

@@ -15,6 +15,5 @@ PROJECT_ROOT = os.path.join(BASE_DIR, '..', '..')
 DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
 CV_DIR = os.path.join(DATA_DIR, 'cv')
 
-# Pengaturan pencarian
 MAX_RESULTS = 10
 SIMILARITY_THRESHOLD = 2

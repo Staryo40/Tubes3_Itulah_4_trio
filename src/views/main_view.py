@@ -395,17 +395,19 @@ class MainView(QMainWindow):
         card.mousePressEvent = lambda event: self.show_card_detail(candidate_data)
         
         card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(15, 15, 15, 15)
+        card_layout.setContentsMargins(10, 15, 10, 15)
         card_layout.setSpacing(10)
         
         # Header (name and matches)
         header_layout = QHBoxLayout()
         name_label = QLabel(candidate_data["name"])
-        name_font = QFont()
-        name_font.setBold(True)
-        name_font.setPointSize(12)
-        name_label.setFont(name_font)
-
+        name_label.setStyleSheet("""
+            QLabel {
+                font-size: 10pt;
+                font-weight: bold;
+            }
+        """)
+        
         matches_text = f"{candidate_data['total_match']} match"
         if candidate_data['total_match'] != 1:
             matches_text += "es"
@@ -471,7 +473,6 @@ class MainView(QMainWindow):
                 background-color: transparent;
             }
         """)
-        card_layout.addWidget(click_label)
         
         card.setFixedSize(300, 200)
         return card

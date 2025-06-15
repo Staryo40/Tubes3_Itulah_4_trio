@@ -72,8 +72,3 @@ class PDFExtractor:
 if __name__ == "__main__":
     ext = PDFExtractor("test.pdf")
     print(ext.extract_raw_from_pdf())
-    # pdf_path = "test.pdf"  
-    # ind = extract_with_indent(pdf_path)
-    # text = indent_text_to_format_text(ind)
-    # print(text)
-    # print(repr(text))

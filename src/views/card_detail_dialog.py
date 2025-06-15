@@ -15,11 +15,10 @@ class CardDetailDialog(QDialog):
     def __init__(self, candidate_data, parent=None):
         super().__init__(parent)
         self.candidate_data = candidate_data
-        self.setWindowTitle("")  # Remove title
+        self.setWindowTitle("")  
         self.setModal(True)
         self.setFixedSize(600, 500)
         
-        # Remove window frame for modern look
         self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         
@@ -28,11 +27,9 @@ class CardDetailDialog(QDialog):
         self.animate_entrance()
     
     def setup_ui(self):
-        # Main layout with margins for shadow
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(20, 20, 20, 20)
         
-        # Create the modern card container
         self.card_container = QFrame()
         self.card_container.setStyleSheet("""
             QFrame {
@@ -42,24 +39,19 @@ class CardDetailDialog(QDialog):
             }
         """)
         
-        # Card layout
         card_layout = QVBoxLayout(self.card_container)
         card_layout.setContentsMargins(0, 0, 0, 0)
         card_layout.setSpacing(0)
         
-        # Header section with gray gradient background
         self.create_header_section(card_layout)
         
-        # Content section
         self.create_content_section(card_layout)
         
-        # Footer section with buttons
         self.create_footer_section(card_layout)
         
         main_layout.addWidget(self.card_container)
     
     def create_header_section(self, layout):
-        """Create modern header with gray gradient background"""
         header_frame = QFrame()
         header_frame.setFixedHeight(120)
         header_frame.setStyleSheet("""
@@ -77,7 +69,6 @@ class CardDetailDialog(QDialog):
         header_layout.setContentsMargins(30, 25, 30, 25)
         header_layout.setSpacing(8)
         
-        # Candidate name with modern typography
         name_label = QLabel(self.candidate_data["name"])
         name_label.setStyleSheet("""
             QLabel {
@@ -90,7 +81,6 @@ class CardDetailDialog(QDialog):
         """)
         header_layout.addWidget(name_label)
         
-        # Matches info with pill design
         matches_container = QHBoxLayout()
         matches_container.setContentsMargins(0, 0, 0, 0)
         
@@ -117,7 +107,6 @@ class CardDetailDialog(QDialog):
         layout.addWidget(header_frame)
     
     def create_content_section(self, layout):
-        """Create content section with gray styling"""
         content_frame = QFrame()
         content_frame.setStyleSheet("""
             QFrame {
@@ -130,7 +119,6 @@ class CardDetailDialog(QDialog):
         content_layout.setContentsMargins(30, 25, 30, 20)
         content_layout.setSpacing(20)
         
-        # Keywords section title
         keywords_title = QLabel("Matched Skills")
         keywords_title.setStyleSheet("""
             QLabel {
@@ -142,13 +130,11 @@ class CardDetailDialog(QDialog):
         """)
         content_layout.addWidget(keywords_title)
         
-        # Keywords with modern card design
         self.create_keywords_section(content_layout)
         
         layout.addWidget(content_frame)
     
     def create_keywords_section(self, layout):
-        """Create modern keywords section with gray cards"""
         # Scrollable container
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
@@ -182,13 +168,11 @@ class CardDetailDialog(QDialog):
             }
         """)
         
-        # Keywords container
         keywords_widget = QWidget()
         keywords_layout = QVBoxLayout(keywords_widget)
         keywords_layout.setContentsMargins(20, 15, 20, 15)
         keywords_layout.setSpacing(12)
         
-        # Create keyword cards
         i = 0
         for key, keyword_data in (self.candidate_data["search_res"].items()):
             keyword_card = self.create_keyword_card(keyword_data, key, i)
@@ -199,7 +183,6 @@ class CardDetailDialog(QDialog):
         layout.addWidget(scroll_area)
     
     def create_keyword_card(self, keyword_data, name, index):
-        """Create individual keyword card with gray theme"""
         card = QFrame()
         card.setStyleSheet("""
             QFrame {
@@ -213,7 +196,6 @@ class CardDetailDialog(QDialog):
         card_layout.setContentsMargins(16, 12, 16, 12)
         card_layout.setSpacing(12)
         
-        # Index number with gray circle background
         index_label = QLabel(str(index + 1))
         index_label.setFixedSize(24, 24)
         index_label.setAlignment(Qt.AlignCenter)
@@ -228,7 +210,6 @@ class CardDetailDialog(QDialog):
         """)
         card_layout.addWidget(index_label)
         
-        # Keyword info
         info_layout = QVBoxLayout()
         info_layout.setSpacing(2)
 
@@ -264,7 +245,6 @@ class CardDetailDialog(QDialog):
         info_layout.addWidget(occurrence_label)
         card_layout.addLayout(info_layout)
         
-        # Occurrence count badge
         count_badge = QLabel(str(occurrences))
         count_badge.setFixedSize(32, 20)
         count_badge.setAlignment(Qt.AlignCenter)
@@ -282,7 +262,6 @@ class CardDetailDialog(QDialog):
         return card
 
     def add_shadow_effect(self):
-        """Add modern drop shadow effect"""
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(30)
         shadow.setXOffset(0)
@@ -291,10 +270,8 @@ class CardDetailDialog(QDialog):
         self.card_container.setGraphicsEffect(shadow)
     
     def animate_entrance(self):
-        """Add entrance animation"""
         self.setWindowOpacity(0)
         
-        # Fade in animation
         self.fade_animation = QPropertyAnimation(self, b"windowOpacity")
         self.fade_animation.setDuration(200)
         self.fade_animation.setStartValue(0)
@@ -303,26 +280,22 @@ class CardDetailDialog(QDialog):
         self.fade_animation.start()
     
     def keyPressEvent(self, event):
-        """Handle key press events"""
         if event.key() == Qt.Key_Escape:
             self.close()
         else:
             super().keyPressEvent(event)
     
     def mousePressEvent(self, event):
-        """Handle mouse press for dragging"""
         if event.button() == Qt.LeftButton:
             self.drag_position = event.globalPos() - self.frameGeometry().topLeft()
             event.accept()
     
     def mouseMoveEvent(self, event):
-        """Handle mouse move for dragging"""
         if event.buttons() == Qt.LeftButton and hasattr(self, 'drag_position'):
             self.move(event.globalPos() - self.drag_position)
             event.accept()
 
     def create_footer_section(self, layout):
-        """Create modern footer with gray-themed action buttons"""
         footer_frame = QFrame()
         footer_frame.setFixedHeight(80)
         footer_frame.setStyleSheet("""
@@ -385,7 +358,6 @@ class CardDetailDialog(QDialog):
         """)
         summary_btn.clicked.connect(self.show_cv_summary)
         
-        # View CV button (darker gray primary)
         cv_btn = QPushButton("📋 View CV")
         cv_btn.setFixedHeight(40)
         cv_btn.setStyleSheet("""
@@ -413,6 +385,5 @@ class CardDetailDialog(QDialog):
         layout.addWidget(footer_frame)
     
     def show_cv_summary(self):
-        """Show CV Summary dialog"""
         summary_dialog = CVSummaryDialog(self.candidate_data, self)
         summary_dialog.exec_()

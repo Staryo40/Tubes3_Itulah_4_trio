@@ -288,7 +288,7 @@ class MultipleKeywordSearch:
                 else:
                     result[key] =  { "type": KeywordResult.Exact,
                                     "occurrence": len(indexes) }
-            print(result)
+            # print(result)
         else:
             for word in self.keywords:
                 search = SearchAlgorithm(self.text, word)

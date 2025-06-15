@@ -29,53 +29,45 @@ class MainController:
         self.view.cv_requested.connect(self.handle_cv_request)
     
     def initialize(self):
-        """Initialize the application with sample data"""
         self.model.load_sample_data()
         self.update_view()
     
     def handle_search(self, keywords, algorithm: MatchingAlgorithm, top_matches):
-        """Handle search request from view"""
         print(f"Controller: Searching for '{keywords}' using {algorithm}, top {top_matches} matches")
         self.model.current_page = 0
+        self.view.cleanup_right_panel()
         res_gen = SearchResult(self.data_path, self.data, keywords, top_matches, global_levenshtein_threshold, LevenshteinMethod.WORD, algorithm)
         self.results = res_gen.search_result()
         self.model.set_card_result(self.results['result'])
-        # print(f"results: {self.results}")
         self.view.setup_right_panel_content(self.results['cv_num'], self.results['time'])
         self.update_view()
     
     def handle_algorithm_change(self, algorithm_state):
-        """Handle algorithm toggle change"""
         algorithms = ["KMP", "Aho-Corasick", "BM"]
         selected_algorithm = algorithms[algorithm_state]
         print(f"Controller: Algorithm changed to {selected_algorithm}")
     
     def handle_previous_page(self):
-        """Handle previous page request"""
         if self.model.go_previous_page():
             self.update_view()
             print(f"Controller: Moved to page {self.model.current_page + 1}")
     
     def handle_next_page(self):
-        """Handle next page request"""
         if self.model.go_next_page():
             self.update_view()
             print(f"Controller: Moved to page {self.model.current_page + 1}")
     
     def handle_summary_request(self, path):
-        """Handle summary view request"""
         print(f"Controller: Opening summary from {path}")
         # Implement summary opening logic here
         self.open_file(path)
     
     def handle_cv_request(self, path):
-        """Handle CV view request - Open PDF file"""
         full_path = os.path.join(self.data_path, path)
         print(f"Controller: Opening CV PDF from {full_path}")
         self.open_pdf_file(full_path)
     
     def open_pdf_file(self, file_path):
-        """Open PDF file with system default PDF viewer"""
         try:
             # Check if file exists
             if not os.path.exists(file_path):
@@ -104,7 +96,6 @@ class MainController:
             self.show_error_message(f"Could not open PDF file: {str(e)}")
     
     def open_file(self, file_path):
-        """Open any file with system default application"""
         try:
             if not os.path.exists(file_path):
                 print(f"Error: File not found - {file_path}")
@@ -129,7 +120,6 @@ class MainController:
             self.show_error_message(f"Could not open file: {str(e)}")
     
     def show_file_not_found_message(self, file_path):
-        """Show message when file is not found"""
         print(f"File not found: {file_path}")
         
         # You can implement a proper message dialog here if needed
@@ -141,7 +131,6 @@ class MainController:
         msg.exec_()
     
     def show_error_message(self, message):
-        """Show error message"""
         print(f"Error: {message}")
         
         # You can implement a proper error dialog here if needed
@@ -153,8 +142,6 @@ class MainController:
         # msg.exec_()
     
     def update_view(self):
-        """Update view with current model state"""
-        print(f"self.results: {self.results}")
         self.view.update_cards(self.model.get_card_result_for_current_page())
 
         can_previous = self.model.can_go_previous()

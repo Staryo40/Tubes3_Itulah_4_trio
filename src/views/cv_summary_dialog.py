@@ -15,7 +15,6 @@ class CVSummaryDialog(QDialog):
         self.setModal(True)
         self.setFixedSize(650, 700)
         
-        # Remove window frame for modern look
         self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         
@@ -24,11 +23,9 @@ class CVSummaryDialog(QDialog):
         self.animate_entrance()
     
     def setup_ui(self):
-        # Main layout with margins for shadow
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(25, 25, 25, 25)
         
-        # Create the modern card container
         self.card_container = QFrame()
         self.card_container.setStyleSheet("""
             QFrame {
@@ -38,24 +35,19 @@ class CVSummaryDialog(QDialog):
             }
         """)
         
-        # Card layout
         card_layout = QVBoxLayout(self.card_container)
         card_layout.setContentsMargins(0, 0, 0, 0)
         card_layout.setSpacing(0)
         
-        # Header section with gray gradient background
         self.create_header_section(card_layout)
         
-        # Content section
         self.create_content_section(card_layout)
         
-        # Footer section with buttons
         self.create_footer_section(card_layout)
         
         main_layout.addWidget(self.card_container)
     
     def create_header_section(self, layout):
-        """Create modern header with gray gradient background"""
         header_frame = QFrame()
         header_frame.setFixedHeight(140)
         header_frame.setStyleSheet("""
@@ -113,8 +105,6 @@ class CVSummaryDialog(QDialog):
         layout.addWidget(header_frame)
     
     def create_content_section(self, layout):
-        """Create scrollable content section with modern cards"""
-        # Scrollable container
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -145,23 +135,19 @@ class CVSummaryDialog(QDialog):
             }
         """)
         
-        # Content widget
         content_widget = QWidget()
         content_layout = QVBoxLayout(content_widget)
         content_layout.setContentsMargins(35, 30, 35, 20)
         content_layout.setSpacing(25)
         
-        # Personal Information Section
         self.create_personal_info_section(content_layout)
         
-        # Dynamic sections based on summary data
         self.create_dynamic_sections(content_layout)
         
         scroll_area.setWidget(content_widget)
         layout.addWidget(scroll_area)
 
     def create_dynamic_sections(self, layout):
-        """Create sections dynamically based on summary data structure"""
         summary_data = self.candidate_data.get('summary', {})
 
         if not isinstance(summary_data, dict):
@@ -172,10 +158,9 @@ class CVSummaryDialog(QDialog):
             if not isinstance(value, dict):
                 continue
 
-            section_type = value.get('type', 'list')  # Default to list if no type specified
+            section_type = value.get('type', 'list') 
             content = value.get('content', [])
 
-            # Create section dynamically based on header and type
             self.create_flexible_section(layout, header, content, section_type)
         
         if not header or not content:
@@ -184,10 +169,8 @@ class CVSummaryDialog(QDialog):
             return
 
     def create_flexible_section(self, layout, header, content, section_type):
-        """Create a flexible section that adapts to any header and content"""
         print(f"Creating section: {header} with type {section_type} and content: {content}")
         
-        # Map common headers to appropriate icons
         icon_map = {
             'skill': '🛠️',
             'skills': '🛠️',
@@ -214,13 +197,10 @@ class CVSummaryDialog(QDialog):
             'profile': '👤'
         }
         
-        # Get icon for the header (case insensitive)
         icon = icon_map.get(header.lower(), '📋')
         
-        # Create section header
         layout.addWidget(self.create_section_header(header, icon))
         
-        # Create section card
         section_card = QFrame()
         section_card.setStyleSheet("""
             QFrame {
@@ -238,20 +218,16 @@ class CVSummaryDialog(QDialog):
         if len(content) > 10:
             content = content[:10]  
         
-        # Handle different section types
         if section_type == TextFormat.Bullet:
             self.create_bullet_content(section_layout, content, header)
-        else:  # Default to list type
+        else:  
             self.create_list_content(section_layout, content, header)
         
         layout.addWidget(section_card)
 
     def create_bullet_content(self, layout, content, header):
-        """Create bullet-style content with tags/pills"""
         
-        # Determine styling based on header type
         if header.lower() in ['skill', 'skills']:  
-            # Skills get special dark gray styling 
             tag_style = """
                 QLabel {
                     background-color: #6c757d;
@@ -265,7 +241,6 @@ class CVSummaryDialog(QDialog):
             tag_height = 40
             items_per_row = 4
         else:
-            # Other bullet items get lighter styling
             tag_style = """
                 QLabel {
                     background-color: #e9ecef;
@@ -279,7 +254,6 @@ class CVSummaryDialog(QDialog):
             tag_height = 32
             items_per_row = 3
         
-        # Create tags in rows
         current_row = QHBoxLayout()
         current_row.setSpacing(10)
         items_in_current_row = 0
@@ -334,7 +308,6 @@ class CVSummaryDialog(QDialog):
                 }
             """)
             
-            # Experience text
             exp_text = str(exp)
             exp_label = QLabel(exp_text)
             exp_label.setWordWrap(True)
@@ -352,7 +325,6 @@ class CVSummaryDialog(QDialog):
             layout.addWidget(exp_container)
 
     def create_section_header(self, title, icon=""):
-        """Create consistent section headers"""
         header_frame = QFrame()
         header_frame.setStyleSheet("""
             QFrame {
@@ -381,7 +353,6 @@ class CVSummaryDialog(QDialog):
         return header_frame
     
     def create_personal_info_section(self, layout):
-        """Create personal information section"""
         layout.addWidget(self.create_section_header("Personal Information", "👤"))
         
         info_card = QFrame()
@@ -441,7 +412,6 @@ class CVSummaryDialog(QDialog):
         layout.addWidget(info_card)
     
     def create_footer_section(self, layout):
-        """Create modern footer with action buttons"""
         footer_frame = QFrame()
         footer_frame.setFixedHeight(80)
         footer_frame.setStyleSheet("""
@@ -457,7 +427,6 @@ class CVSummaryDialog(QDialog):
         footer_layout.setContentsMargins(35, 20, 35, 20)
         footer_layout.setSpacing(15)
         
-        # Close button
         close_btn = QPushButton("✕ Close")
         close_btn.setFixedHeight(44)
         close_btn.setStyleSheet("""
@@ -497,7 +466,6 @@ class CVSummaryDialog(QDialog):
         """Add entrance animation"""
         self.setWindowOpacity(0)
         
-        # Fade in animation
         self.fade_animation = QPropertyAnimation(self, b"windowOpacity")
         self.fade_animation.setDuration(250)
         self.fade_animation.setStartValue(0)
@@ -513,13 +481,11 @@ class CVSummaryDialog(QDialog):
             super().keyPressEvent(event)
     
     def mousePressEvent(self, event):
-        """Handle mouse press for dragging"""
         if event.button() == Qt.LeftButton:
             self.drag_position = event.globalPos() - self.frameGeometry().topLeft()
             event.accept()
     
     def mouseMoveEvent(self, event):
-        """Handle mouse move for dragging"""
         if event.buttons() == Qt.LeftButton and hasattr(self, 'drag_position'):
             self.move(event.globalPos() - self.drag_position)
             event.accept()

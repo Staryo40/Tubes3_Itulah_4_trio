@@ -26,10 +26,8 @@ def encrypt_all_force():
         for applicant in all_applicants:
             applicant_id = applicant['applicant_id']
             
-            # Force encrypt without checking
             encrypted_data = encrypt_applicant_profile(applicant)
             
-            # Update database
             update_sql = """UPDATE ApplicantProfile 
                           SET first_name = %s, last_name = %s, address = %s, phone_number = %s
                           WHERE applicant_id = %s"""
