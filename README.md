@@ -20,10 +20,7 @@ While fuzzy matching only uses one, and is only a backup and used when the exact
 ```bash
 mysql -u root -p < data/tubes3_seeding.sql 
 ```
-### Downloading dataset
-```bash
-python src/download_dataset.py 
-```
+
 ### Setting up .env
 In the root directory of the project there is a file called ".envi". In that file, replace the password with your actual mysql password  
 For example, your password is "sql', then in .envi, put:
@@ -37,6 +34,11 @@ After putting your mysql password, change the file name from ".envi" to ".env"
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+```
+
+### Downloading dataset
+```bash
+python src/download_dataset.py 
 ```
 
 ## Running The Program
