@@ -7,7 +7,7 @@
 There are three main exact string matching algorithm used in this program  
 1. Knuth Morris Pratt (KMP) Algorithm: Exact string matching algorithm that compares from left to right, with the addition of the border function that counts the biggest prefix that exist at every character of the pattern being searched to save on redundant comparison
 2. Boyer Moore Algorithm: Exact string matching algorithm that compares from right to left of the pattern, by preprocessing the final occurences of each character in the alphabet in the pattern, this algorithm saves on comparisons by always jumping to those last occurences when there is no match. This algorithm shines when the alphabet is rich i.e a lot of different unique characters are present
-3. Aho Corasick Algorithm: Exact string matching using the help of the Trie structure to find several patterns in one search
+3. Aho Corasick Algorithm: Exact string matching using the help of the Trie structure and its failure links to find several patterns in one search
 
 While fuzzy matching only uses one, and is only a backup and used when the exact string matching does not bring any matches, the algorithm used in fuzzy search is
 1. Levenshtein distance: dynamic programming approach on comparing the difference of two strings, in this program all operations (replacement, insertion, deletion) have the same weight, that is 1 for the calculation of the matrix for Levenshtein distance
