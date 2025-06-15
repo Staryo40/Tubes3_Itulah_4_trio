@@ -1,11 +1,28 @@
-import os
-import subprocess
-import platform
-import webbrowser
+import os, subprocess, platform, webbrowser, threading
 from model import *
 from controller import *
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 
 global_levenshtein_threshold = 2
+
+class SearchThread(QThread):
+    search_completed = pyqtSignal(dict)
+    
+    def __init__(self, data_path, data, keywords, top_matches, threshold, method, algorithm):
+        super().__init__()
+        self.data_path = data_path
+        self.data = data
+        self.keywords = keywords
+        self.top_matches = top_matches
+        self.threshold = threshold
+        self.method = method
+        self.algorithm = algorithm
+    
+    def run(self):
+        res_gen = SearchResult(self.data_path, self.data, self.keywords, 
+                              self.top_matches, self.threshold, self.method, self.algorithm)
+        results = res_gen.search_result()
+        self.search_completed.emit(results)
 
 class MainController:
     def __init__(self, view, model, data, data_path):
@@ -36,9 +53,22 @@ class MainController:
         print(f"Controller: Searching for '{keywords}' using {algorithm}, top {top_matches} matches")
         self.model.current_page = 0
         self.view.cleanup_right_panel()
-        res_gen = SearchResult(self.data_path, self.data, keywords, top_matches, global_levenshtein_threshold, LevenshteinMethod.WORD, algorithm)
-        self.results = res_gen.search_result()
+        
+        # Show loading animation
+        self.view.show_loading_animation()
+        
+        # Create and start search thread
+        self.search_thread = SearchThread(
+            self.data_path, self.data, keywords, top_matches, 
+            global_levenshtein_threshold, LevenshteinMethod.WORD, algorithm
+        )
+        self.search_thread.search_completed.connect(self.on_search_completed)
+        self.search_thread.start()
+
+    def on_search_completed(self, results):
+        self.results = results
         self.model.set_card_result(self.results['result'])
+        self.view.hide_loading_animation()
         self.view.setup_right_panel_content(self.results['cv_num'], self.results['time'])
         self.update_view()
     

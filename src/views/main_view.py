@@ -2,10 +2,10 @@ import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLineEdit, QPushButton, QLabel,
     QHBoxLayout, QMainWindow, QSpinBox, QGridLayout, QFrame, QScrollArea,
-    QToolBar, QAction
+    QToolBar, QAction, QSizePolicy
 )
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QPixmap, QFont, QCursor
+from PyQt5.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, QTimer, QSize
+from PyQt5.QtGui import QPixmap, QFont, QCursor, QPainter, QPen
 from .card_detail_dialog import CardDetailDialog
 from local_enum import *
 
@@ -22,24 +22,32 @@ class MainView(QMainWindow):
         super().__init__()
         self.toggle_state = 0
         self.initUI()
-    
+        
     def initUI(self):
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.main_layout = QHBoxLayout(self.central_widget)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
 
         self.setup_left_panel()
         self.setup_right_panel()
 
-        self.main_layout.addWidget(self.left_panel, 1)
-        self.main_layout.addWidget(self.main_area, 3)
+        self.main_layout.addWidget(self.left_panel, 1)  # 25% width
+        self.main_layout.addWidget(self.main_area, 3)   # 75% width
 
         self.setWindowTitle("CVSearch")
-
+        self.setMinimumSize(800, 600)  
+        self.resize(1200, 800)  
+        
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     
     def setup_left_panel(self):
         self.left_panel = QWidget()
+        self.left_panel.setMinimumWidth(250)  # Minimum width
+        self.left_panel.setMaximumWidth(350)  # Maximum width
+        self.left_panel.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.left_panel.setStyleSheet("""
             QWidget {
                 background-color: #e8e7e3;
@@ -47,8 +55,8 @@ class MainView(QMainWindow):
             }
         """)
         self.left_panel_layout = QVBoxLayout(self.left_panel)
-        self.left_panel_layout.setContentsMargins(20, 20, 20, 20)
-        self.left_panel_layout.setSpacing(15)
+        self.left_panel_layout.setContentsMargins(15, 15, 15, 15)  # Responsive margins
+        self.left_panel_layout.setSpacing(10)
 
         self.setAppLogo(self.left_panel_layout)
         self.setSearchBar(self.left_panel_layout)
@@ -60,14 +68,26 @@ class MainView(QMainWindow):
     
     def setup_right_panel(self):
         self.main_area = QWidget()
+        self.main_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.result_layout = QVBoxLayout(self.main_area)
-        self.result_layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Responsive margins
+        margin = max(10, min(30, self.width() // 40))
+        self.result_layout.setContentsMargins(margin, margin, margin, margin)
         self.result_layout.setSpacing(15)
 
         self.welcome_label = QLabel("Welcome to CVSearch!")
         self.welcome_label.setAlignment(Qt.AlignCenter)
-        self.welcome_label.setStyleSheet("font-size: 35px; font-weight: bold; color: #a7afb6;")
+        self.welcome_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.welcome_label.setWordWrap(True)
+        self.update_welcome_font()
         self.result_layout.addWidget(self.welcome_label)
+
+    def update_welcome_font(self):
+        """Update welcome label font size based on window size"""
+        if hasattr(self, 'welcome_label'):
+            font_size = max(20, min(35, self.width() // 25))
+            self.welcome_label.setStyleSheet(f"font-size: {font_size}px; font-weight: bold; color: #a7afb6;")
 
     def cleanup_right_panel(self):
         """Clear the right panel content"""
@@ -76,28 +96,128 @@ class MainView(QMainWindow):
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
+            elif item.layout() is not None:
+                # Handle nested layouts
+                layout = item.layout()
+                while layout.count():
+                    child_item = layout.takeAt(0)
+                    child_widget = child_item.widget()
+                    if child_widget is not None:
+                        child_widget.deleteLater()
         
+        # Reset references
         self.cards_container = None
         self.cards_layout = None
         self.result_title = None
         self.result_subtitle = None
+        self.result_header_card = None
         self.pagination_layout = None
         self.welcome_label = None
 
+    def update_header_card_responsive(self):
+        """Update header card styling based on window size"""
+        if hasattr(self, 'result_header_card'):
+            # Responsive width - max 600px or 80% of window width
+            max_width = min(600, int(self.width() * 0.8))
+            self.result_header_card.setMaximumWidth(max_width)
+            
+            # Responsive font sizes
+            title_font_size = max(20, min(28, self.width() // 30))
+            subtitle_font_size = max(12, min(14, self.width() // 60))
+            
+            # Update title font
+            if hasattr(self, 'result_title'):
+                self.result_title.setStyleSheet(f"""
+                    QLabel {{
+                        font-size: {title_font_size}px;
+                        font-weight: bold;
+                        color: #2c2c2c;
+                        background-color: transparent;
+                        margin: 0px;
+                        padding: 0px;
+                    }}
+                """)
+            
+            # Update subtitle font
+            if hasattr(self, 'result_subtitle'):
+                self.result_subtitle.setStyleSheet(f"""
+                    QLabel {{
+                        font-size: {subtitle_font_size}px;
+                        color: #555555;
+                        background-color: transparent;
+                        font-weight: 500;
+                        margin: 0px;
+                        padding: 0px;
+                    }}
+                """)
+
     def setup_right_panel_content(self, result_count, execution_time):
         self.cleanup_right_panel()
+        
+        # Create header card container
+        self.result_header_card = QFrame()
+        self.result_header_card.setFrameShape(QFrame.StyledPanel)
+        self.result_header_card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.result_header_card.setStyleSheet("""
+            QFrame {
+                background-color: #d0d0d0;
+                border-radius: 15px;
+                padding: 20px;
+                border: 1px solid #c0c0c0;
+                margin: 10px 0px;
+            }
+        """)
+        
+        # Header card layout
+        header_card_layout = QVBoxLayout(self.result_header_card)
+        header_card_layout.setContentsMargins(20, 15, 20, 15)
+        header_card_layout.setSpacing(8)
+        header_card_layout.setAlignment(Qt.AlignCenter)
+        
         # Main title
-        self.result_title = QLabel("Results")
+        self.result_title = QLabel("Search Results")
         self.result_title.setAlignment(Qt.AlignCenter)
-        self.result_title.setStyleSheet("font-size: 35px; font-weight: bold; color: black;")
-        self.result_layout.addWidget(self.result_title)
-
+        self.result_title.setStyleSheet("""
+            QLabel {
+                font-size: 28px;
+                font-weight: bold;
+                color: #2c2c2c;
+                background-color: transparent;
+                margin: 0px;
+                padding: 0px;
+            }
+        """)
+        header_card_layout.addWidget(self.result_title)
+        
         # Subtitle with result count and execution time
         self.result_subtitle = QLabel(f"{result_count} CVs scanned in {execution_time:.2f}s")
         self.result_subtitle.setAlignment(Qt.AlignCenter)
-        self.result_subtitle.setStyleSheet("font-size: 14px; color: #666666; margin-top: 5px;")
-        self.result_layout.addWidget(self.result_subtitle)
+        self.result_subtitle.setStyleSheet("""
+            QLabel {
+                font-size: 14px;
+                color: #555555;
+                background-color: transparent;
+                font-weight: 500;
+                margin: 0px;
+                padding: 0px;
+            }
+        """)
+        header_card_layout.addWidget(self.result_subtitle)
+        
+        # Add header card to main layout
+        header_container = QHBoxLayout()
+        header_container.addStretch()
+        header_container.addWidget(self.result_header_card, 0)  # 0 means don't stretch
+        header_container.addStretch()
+        
+        self.result_layout.addLayout(header_container)
+        
+        # Add some spacing
+        spacer = QWidget()
+        spacer.setFixedHeight(10)
+        self.result_layout.addWidget(spacer)
 
+        # Cards container (existing code)
         self.cards_container = QWidget()
         self.cards_layout = QGridLayout(self.cards_container)
         self.cards_layout.setSpacing(20)
@@ -105,7 +225,7 @@ class MainView(QMainWindow):
 
         self.setup_pagination()
         self.result_layout.addLayout(self.pagination_layout)
-    
+
     def setup_pagination(self):
         self.pagination_layout = QHBoxLayout()
         self.prev_button = QPushButton("Previous")
@@ -120,11 +240,35 @@ class MainView(QMainWindow):
     def setAppLogo(self, layout):
         self.image_label = QLabel(self)
         self.pixmap = QPixmap("img/CVSearch_logo.png")
-        scaled_pixmap = self.pixmap.scaledToHeight(100, Qt.SmoothTransformation)
+        
+        logo_height = min(100, self.height() // 8)  # Max 100px or 1/8 of window height
+        scaled_pixmap = self.pixmap.scaledToHeight(logo_height, Qt.SmoothTransformation)
+        
         self.image_label.setPixmap(scaled_pixmap)
         self.image_label.setScaledContents(True)
+        self.image_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         layout.addWidget(self.image_label)
         layout.setAlignment(self.image_label, Qt.AlignCenter)
+
+    def get_responsive_columns(self):
+        """Calculate number of columns based on window width"""
+        width = self.main_area.width()
+        if width < 600:
+            return 1  # Mobile-like view
+        elif width < 900:
+            return 2  # Tablet-like view
+        elif width < 1200:
+            return 3  # Desktop view
+        else:
+            return 4  # Large desktop view
+
+    def get_responsive_card_size(self):
+        """Calculate card size based on available space"""
+        cols = self.get_responsive_columns()
+        available_width = self.main_area.width() - 60  # Account for margins
+        card_width = max(250, (available_width - (cols - 1) * 20) // cols)  # 20px spacing
+        card_height = max(180, min(220, card_width * 0.75))  # Maintain aspect ratio
+        return QSize(int(card_width), int(card_height))
 
     def setSearchBar(self, layout):
         self.search_label = QLabel("Keywords:", self)
@@ -331,6 +475,9 @@ class MainView(QMainWindow):
     
     def on_search_clicked(self):
         keywords = [word.strip() for word in self.search_bar.text().split(",") if word.strip()]
+        if not keywords:
+            return  # Don't search if no keywords
+            
         algorithms = ["KMP", "Aho-Corasick", "BM"]
         algorithm = algorithms[self.toggle_state]
         top_matches = self.spin_box.value()
@@ -346,66 +493,118 @@ class MainView(QMainWindow):
         self.search_requested.emit(keywords, algo_enum, top_matches)
 
     def update_cards(self, candidates_data):
-        # Clear existing cards
         while self.cards_layout.count():
             item = self.cards_layout.takeAt(0)
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
 
-        # Add new cards
-        cols = 3
+        cols = self.get_responsive_columns()
+        card_size = self.get_responsive_card_size()
+        
         for index, candidate in enumerate(candidates_data):
             row = index // cols
             col = index % cols
-            card = self.create_card(candidate)
+            card = self.create_card(candidate, card_size)
             self.cards_layout.addWidget(card, row, col)
+        
+        if candidates_data:
+            last_row = (len(candidates_data) - 1) // cols
+            remaining_cols = len(candidates_data) % cols
+            if remaining_cols > 0:
+                for col in range(remaining_cols, cols):
+                    self.cards_layout.setColumnStretch(col, 1)
 
-    def create_card(self, candidate_data):
-        # print(f"Creating card for candidate: {candidate_data}")
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        
+        # Update margins based on window size
+        if hasattr(self, 'result_layout'):
+            margin = max(10, min(30, self.width() // 40))
+            self.result_layout.setContentsMargins(margin, margin, margin, margin)
+        
+        # Update left panel margins
+        if hasattr(self, 'left_panel_layout'):
+            margin = max(10, min(20, self.width() // 60))
+            self.left_panel_layout.setContentsMargins(margin, margin, margin, margin)
+        
+        # Update header card responsiveness
+        self.update_header_card_responsive()
+        
+        # Resize loading overlay if it exists
+        if hasattr(self, 'loading_overlay') and self.loading_overlay:
+            self.loading_overlay.resize(self.main_area.size())
+        
+        # Update cards layout if it exists
+        if hasattr(self, 'cards_layout') and hasattr(self, 'model'):
+            if not hasattr(self, 'resize_timer'):
+                self.resize_timer = QTimer()
+                self.resize_timer.setSingleShot(True)
+                self.resize_timer.timeout.connect(self.update_cards_layout)
+            self.resize_timer.start(100)
+
+    def update_cards_layout(self):
+        """Update cards layout after window resize"""
+        if hasattr(self, 'model') and hasattr(self.model, 'get_card_result_for_current_page'):
+            current_data = self.model.get_card_result_for_current_page()
+            if current_data:
+                self.update_cards(current_data)
+
+
+    def create_card(self, candidate_data, card_size=None):
+        if card_size is None:
+            card_size = QSize(300, 200)
+        
         card = QFrame()
         card.setFrameShape(QFrame.StyledPanel)
-        card.setStyleSheet("""
-            QFrame {
+        card.setFixedSize(card_size)
+        card.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        
+        # Responsive font sizes based on card size
+        name_font_size = max(8, min(12, card_size.width() // 25))
+        content_font_size = max(7, min(10, card_size.width() // 30))
+        
+        card.setStyleSheet(f"""
+            QFrame {{
                 background-color: #e6e6e6;
                 border-radius: 10px;
                 padding: 10px;
                 border: 2px solid transparent;
-            }
-            QFrame:hover {
+            }}
+            QFrame:hover {{
                 background-color: #d6d6d6;
                 cursor: pointer;
-            }
-            /* Sinkronisasi hover untuk semua child components */
-            QFrame:hover QLabel {
+            }}
+            QFrame:hover QLabel {{
                 background-color: transparent;
-            }
-            QFrame:hover QLabel[class="keyword"] {
+            }}
+            QFrame:hover QLabel[class="keyword"] {{
                 color: #333333;
-            }
-            QFrame:hover QLabel[class="more"] {
+            }}
+            QFrame:hover QLabel[class="more"] {{
                 color: #555555;
-            }
-            QFrame:hover QLabel[class="click"] {
+            }}
+            QFrame:hover QLabel[class="click"] {{
                 color: #555555;
-            }
+            }}
         """)
         
         card.setCursor(QCursor(Qt.PointingHandCursor))
         card.mousePressEvent = lambda event: self.show_card_detail(candidate_data)
         
         card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(10, 15, 10, 15)
-        card_layout.setSpacing(10)
+        margin = max(5, card_size.width() // 30)
+        card_layout.setContentsMargins(margin, margin, margin, margin)
+        card_layout.setSpacing(max(5, card_size.height() // 40))
         
-        # Header (name and matches)
+        # Header with responsive font
         header_layout = QHBoxLayout()
         name_label = QLabel(candidate_data["name"])
-        name_label.setStyleSheet("""
-            QLabel {
-                font-size: 10pt;
+        name_label.setStyleSheet(f"""
+            QLabel {{
+                font-size: {name_font_size}pt;
                 font-weight: bold;
-            }
+            }}
         """)
         
         matches_text = f"{candidate_data['total_match']} match"
@@ -413,20 +612,24 @@ class MainView(QMainWindow):
             matches_text += "es"
         matches_label = QLabel(matches_text)
         matches_label.setAlignment(Qt.AlignRight)
+        matches_label.setStyleSheet(f"font-size: {content_font_size}pt;")
         
         header_layout.addWidget(name_label)
         header_layout.addWidget(matches_label)
         card_layout.addLayout(header_layout)
         
-        # Keywords section
+        # Keywords section with responsive content
         keywords_label = QLabel("Matched keywords:")
+        keywords_label.setStyleSheet(f"font-size: {content_font_size}pt;")
         card_layout.addWidget(keywords_label)
         
         keywords_preview_layout = QVBoxLayout()
-        keywords_preview_layout.setContentsMargins(10, 0, 0, 0)
+        keywords_preview_layout.setContentsMargins(margin, 0, 0, 0)
         keywords_preview_layout.setSpacing(2)
         
-        max_preview = min(3, len(candidate_data["search_res"]))
+        # Adjust number of preview items based on card height
+        max_preview = min(3 if card_size.height() > 180 else 2, len(candidate_data["search_res"]))
+        
         for i in range(max_preview):
             keyword = list(candidate_data["search_res"].keys())[i]
             occurrences = candidate_data["search_res"][keyword]["occurrence"]
@@ -434,27 +637,28 @@ class MainView(QMainWindow):
             keyword_text += "occurrence" if occurrences == 1 else "occurrences"
             
             keyword_label = QLabel(keyword_text)
-            keyword_label.setProperty("class", "keyword")  # Set property untuk styling
-            keyword_label.setStyleSheet("""
-                QLabel {
+            keyword_label.setProperty("class", "keyword")
+            keyword_label.setStyleSheet(f"""
+                QLabel {{
                     padding: 1px 0px;
-                    font-size: 10px;
+                    font-size: {content_font_size-1}pt;
                     background-color: transparent;
-                }
+                }}
             """)
+            keyword_label.setWordWrap(True)  # Enable word wrap for long text
             keywords_preview_layout.addWidget(keyword_label)
 
-        if len(candidate_data["search_res"]) > 3:
-            more_label = QLabel(f"... and {len(candidate_data['search_res']) - 3} more")
-            more_label.setProperty("class", "more")  # Set property untuk styling
-            more_label.setStyleSheet("""
-                QLabel {
+        if len(candidate_data["search_res"]) > max_preview:
+            more_label = QLabel(f"... and {len(candidate_data['search_res']) - max_preview} more")
+            more_label.setProperty("class", "more")
+            more_label.setStyleSheet(f"""
+                QLabel {{
                     padding: 1px 0px;
-                    font-size: 10px;
+                    font-size: {content_font_size-1}pt;
                     font-style: italic;
                     color: #666666;
                     background-color: transparent;
-                }
+                }}
             """)
             keywords_preview_layout.addWidget(more_label)
         
@@ -462,23 +666,22 @@ class MainView(QMainWindow):
         card_layout.addStretch()
         
         click_label = QLabel("Click to view details")
-        click_label.setProperty("class", "click")  # Set property untuk styling
+        click_label.setProperty("class", "click")
         click_label.setAlignment(Qt.AlignCenter)
-        click_label.setStyleSheet("""
-            QLabel {
-                font-size: 10px;
+        click_label.setStyleSheet(f"""
+            QLabel {{
+                font-size: {content_font_size-1}pt;
                 color: #666666;
                 font-style: italic;
                 padding: 5px;
                 background-color: transparent;
-            }
+            }}
         """)
+        card_layout.addWidget(click_label)
         
-        card.setFixedSize(300, 200)
         return card
 
     def show_card_detail(self, candidate_data):
-        """Show detailed card popup"""
         dialog = CardDetailDialog(candidate_data, self)
         dialog.summary_requested.connect(self.summary_requested.emit)
         dialog.cv_requested.connect(self.cv_requested.emit)
@@ -487,4 +690,114 @@ class MainView(QMainWindow):
     def update_pagination_buttons(self, can_previous, can_next):
         self.prev_button.setEnabled(can_previous)
         self.next_button.setEnabled(can_next)
+
+    def show_loading_animation(self):
+        # Disable search button
+        self.search_button.setEnabled(False)
+        self.search_button.setText("Searching...")
         
+        # Create loading overlay
+        self.loading_overlay = QWidget(self.main_area)
+        self.loading_overlay.setStyleSheet("""
+            QWidget {
+                background-color: transparent;
+                border-radius: 10px;
+            }
+        """)
+        
+        overlay_layout = QVBoxLayout(self.loading_overlay)
+        overlay_layout.setAlignment(Qt.AlignCenter)
+        
+        # Add loading widget
+        self.loading_widget = LoadingWidget()
+        overlay_layout.addWidget(self.loading_widget, alignment=Qt.AlignCenter)
+        
+        # Add loading text
+        loading_label = QLabel("Searching CVs...")
+        loading_label.setAlignment(Qt.AlignCenter)
+        loading_label.setStyleSheet("""
+            QLabel {
+                font-size: 16px;
+                font-weight: bold;
+                color: #666666;
+                margin-top: 10px;
+            }
+        """)
+        overlay_layout.addWidget(loading_label)
+        
+        # Position overlay
+        self.loading_overlay.resize(self.main_area.size())
+        self.loading_overlay.show()
+        
+        # Start animation
+        self.loading_widget.start_animation()
+        
+        # Fade in animation
+        self.fade_in_animation = QPropertyAnimation(self.loading_overlay, b"windowOpacity")
+        self.fade_in_animation.setDuration(300)
+        self.fade_in_animation.setStartValue(0.0)
+        self.fade_in_animation.setEndValue(1.0)
+        self.fade_in_animation.setEasingCurve(QEasingCurve.InOutQuad)
+        self.fade_in_animation.start()
+
+    def hide_loading_animation(self):
+        if hasattr(self, 'loading_overlay') and self.loading_overlay:
+            # Stop loading animation
+            if hasattr(self, 'loading_widget'):
+                self.loading_widget.stop_animation()
+            
+            # Fade out animation
+            self.fade_out_animation = QPropertyAnimation(self.loading_overlay, b"windowOpacity")
+            self.fade_out_animation.setDuration(300)
+            self.fade_out_animation.setStartValue(1.0)
+            self.fade_out_animation.setEndValue(0.0)
+            self.fade_out_animation.setEasingCurve(QEasingCurve.InOutQuad)
+            self.fade_out_animation.finished.connect(self.cleanup_loading_overlay)
+            self.fade_out_animation.start()
+        
+        # Re-enable search button
+        self.search_button.setEnabled(True)
+        self.search_button.setText("Search")
+
+    def cleanup_loading_overlay(self):
+        if hasattr(self, 'loading_overlay') and self.loading_overlay:
+            self.loading_overlay.deleteLater()
+            self.loading_overlay = None
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # Resize loading overlay if it exists
+        if hasattr(self, 'loading_overlay') and self.loading_overlay:
+            self.loading_overlay.resize(self.main_area.size())
+        
+
+class LoadingWidget(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(100, 100)
+        self.angle = 0
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.rotate)
+        
+    def start_animation(self):
+        self.timer.start(50)  # Update every 50ms
+        
+    def stop_animation(self):
+        self.timer.stop()
+        
+    def rotate(self):
+        self.angle = (self.angle + 10) % 360
+        self.update()
+        
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # Draw spinning circle
+        pen = QPen()
+        pen.setWidth(4)
+        pen.setColor(Qt.gray)
+        painter.setPen(pen)
+        
+        rect = self.rect().adjusted(10, 10, -10, -10)
+        painter.drawArc(rect, self.angle * 16, 120 * 16)  # 120 degree arc
