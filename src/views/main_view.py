@@ -62,6 +62,11 @@ class MainView(QMainWindow):
         self.result_layout.setContentsMargins(20, 20, 20, 20)
         self.result_layout.setSpacing(15)
 
+        self.welcome_label = QLabel("Welcome to CVSearch!")
+        self.welcome_label.setAlignment(Qt.AlignCenter)
+        self.welcome_label.setStyleSheet("font-size: 35px; font-weight: bold; color: #a7afb6;")
+        self.result_layout.addWidget(self.welcome_label)
+
     def cleanup_right_panel(self):
         """Clear the right panel content"""
         while self.result_layout.count():
@@ -75,6 +80,7 @@ class MainView(QMainWindow):
         self.result_title = None
         self.result_subtitle = None
         self.pagination_layout = None
+        self.welcome_label = None
 
     def setup_right_panel_content(self, result_count, execution_time):
         self.cleanup_right_panel()

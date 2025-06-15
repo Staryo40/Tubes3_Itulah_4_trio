@@ -39,6 +39,7 @@ class MainController:
         self.model.current_page = 0
         res_gen = SearchResult(self.data_path, self.data, keywords, top_matches, global_levenshtein_threshold, LevenshteinMethod.WORD, algorithm)
         self.results = res_gen.search_result()
+        self.model.set_card_result(self.results['result'])
         # print(f"results: {self.results}")
         self.view.setup_right_panel_content(self.results['cv_num'], self.results['time'])
         self.update_view()
@@ -153,7 +154,8 @@ class MainController:
     
     def update_view(self):
         """Update view with current model state"""
-        self.view.update_cards(self.results['result'].values())
+        print(f"self.results: {self.results}")
+        self.view.update_cards(self.model.get_card_result_for_current_page())
 
         can_previous = self.model.can_go_previous()
         can_next = self.model.can_go_next()

@@ -1,7 +1,7 @@
 from .search_algorithm import *
 from .pdf_text import *
 from .summary import *
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import os
 import time
 
@@ -97,7 +97,7 @@ class SearchResult:
         start = time.time()
 
         cv_result = {}
-        with ThreadPoolExecutor() as executor:
+        with ProcessPoolExecutor() as executor:
             futures = [executor.submit(self.process_cv, id, cv_data) for id, cv_data in self.cv_dic.items()]
             for future in as_completed(futures):
                 id, res = future.result()

@@ -26,9 +26,12 @@
 
 class MainModel:
     def __init__(self):
-        self.candidates_data = []
+        self.card_result = {}
         self.current_page = 0
         self.cards_per_page = 6
+
+    def set_card_result(self, card_result):
+        self.card_result = card_result
         
     def load_sample_data(self):
         """Load sample candidate data"""
@@ -181,15 +184,18 @@ class MainModel:
         }
             
     # ... rest of the methods remain the same
-    def get_candidates_for_page(self):
+    def get_card_result_for_current_page(self):
+        print(f"self.card_result: {self.card_result}")
         """Get candidates for current page"""
         start = self.current_page * self.cards_per_page
-        end = min(start + self.cards_per_page, len(self.candidates_data))
-        return list(self.candidates_data)[start:end]
+        end = min(start + self.cards_per_page, len(self.card_result))
+        result = list(self.card_result.values())[start:end]
+        print(f"model result: {result}")
+        return result
 
     def get_total_pages(self):
         """Get total number of pages"""
-        return (len(self.candidates_data) + self.cards_per_page - 1) // self.cards_per_page
+        return (len(self.card_result) + self.cards_per_page - 1) // self.cards_per_page
 
     def can_go_previous(self):
         """Check if can go to previous page"""
@@ -213,14 +219,5 @@ class MainModel:
             return True
         return False
     
-    def search_candidates(self, keywords, algorithm, top_matches, data, data_path):
-        """Perform search with given parameters"""
-        # Implement actual search logic here
-        print(f"Searching for: {keywords} using {algorithm}, top {top_matches} matches")
-        # For now, just return all data
-        res_gen = search_result(data_path, data, keywords, top_matches, 2, levenshtein_method.WORD, matching_algorithm.BM)
-        result = res_gen.search_result()
-        print(f"result: {result}")
-        return result  
 
 
