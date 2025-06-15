@@ -4,7 +4,7 @@ import os
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root', #sesuiakan dengan sql masing-masing
-    'password': '', #sesuaikan dengan sql masing-masing
+    'password': 'root', #sesuaikan dengan sql masing-masing
     'database': 'ats_system'
 }
 

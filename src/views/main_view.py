@@ -9,7 +9,7 @@ from views.card_detail_dialog import CardDetailDialog
 
 class MainView(QMainWindow):
     # Signals untuk komunikasi dengan controller
-    search_requested = pyqtSignal(str, str, int)  # keywords, algorithm, top_matches
+    search_requested = pyqtSignal(list, str, int)  # keywords, algorithm, top_matches
     algorithm_changed = pyqtSignal(int)  # algorithm state
     previous_page_requested = pyqtSignal()
     next_page_requested = pyqtSignal()
@@ -87,7 +87,7 @@ class MainView(QMainWindow):
 
     def setAppLogo(self, layout):
         self.image_label = QLabel(self)
-        self.pixmap = QPixmap("../img/CVSearch_logo.png")
+        self.pixmap = QPixmap("img/CVSearch_logo.png")
         scaled_pixmap = self.pixmap.scaledToHeight(100, Qt.SmoothTransformation)
         self.image_label.setPixmap(scaled_pixmap)
         self.image_label.setScaledContents(True)
@@ -296,7 +296,8 @@ class MainView(QMainWindow):
         layout.addWidget(self.search_button)
     
     def on_search_clicked(self):
-        keywords = self.search_bar.text()
+        keywords = self.search_bar.text().strip().split(",")
+        print(f"Search clicked with keywords: {keywords}")
         algorithms = ["KMP", "Aho-Corasick", "BM"]
         algorithm = algorithms[self.toggle_state]
         top_matches = self.spin_box.value()
@@ -353,9 +354,9 @@ class MainView(QMainWindow):
         name_font.setBold(True)
         name_font.setPointSize(12)
         name_label.setFont(name_font)
-        
-        matches_text = f"{candidate_data['matches']} match"
-        if candidate_data['matches'] != 1:
+
+        matches_text = f"{candidate_data['total_match']} match"
+        if candidate_data['total_match'] != 1:
             matches_text += "es"
         matches_label = QLabel(matches_text)
         matches_label.setAlignment(Qt.AlignRight)

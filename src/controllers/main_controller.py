@@ -5,11 +5,13 @@ import webbrowser
 from models.candidate_model import CandidateModel
 
 class MainController:
-    def __init__(self, view, model):
+    def __init__(self, view, model, data, data_path):
         self.view = view
         self.model = model
         self.connect_signals()
         self.results = {}
+        self.data = data
+        self.data_path = data_path
         # self.initialize()
     
     def connect_signals(self):
@@ -31,7 +33,7 @@ class MainController:
         print(f"Controller: Searching for '{keywords}' using {algorithm}, top {top_matches} matches")
         self.model.current_page = 0
         # ganti pake fungsi dari aryo
-        self.results = self.model.search_candidates(keywords, algorithm, top_matches)
+        self.results = self.model.search_candidates(keywords, algorithm, top_matches, self.data, self.data_path)
         print(f"results: {self.results}")
         self.update_view()
     
@@ -62,7 +64,7 @@ class MainController:
     def handle_cv_request(self, path):
         """Handle CV view request - Open PDF file"""
         print(f"Controller: Opening CV PDF from {path}")
-        self.open_pdf_file(path)
+        self.open_pdf_file(os.path.join(self.data_path, path))
     
     def open_pdf_file(self, file_path):
         """Open PDF file with system default PDF viewer"""
@@ -121,15 +123,14 @@ class MainController:
     def show_file_not_found_message(self, file_path):
         """Show message when file is not found"""
         print(f"File not found: {file_path}")
-        print("Note: This is sample data. In real application, this would be actual file paths.")
         
         # You can implement a proper message dialog here if needed
-        # from PyQt5.QtWidgets import QMessageBox
-        # msg = QMessageBox()
-        # msg.setIcon(QMessageBox.Warning)
-        # msg.setWindowTitle("File Not Found")
-        # msg.setText(f"Could not find file:\n{file_path}")
-        # msg.exec_()
+        from PyQt5.QtWidgets import QMessageBox
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowTitle("File Not Found")
+        msg.setText(f"Could not find file:\n{file_path}")
+        msg.exec_()
     
     def show_error_message(self, message):
         """Show error message"""

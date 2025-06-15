@@ -92,7 +92,7 @@ class CardDetailDialog(QDialog):
         matches_container = QHBoxLayout()
         matches_container.setContentsMargins(0, 0, 0, 0)
         
-        matches_count = self.candidate_data['matches']
+        matches_count = self.candidate_data['total_match']
         matches_pill = QLabel(f"{matches_count} {'match' if matches_count == 1 else 'matches'}")
         matches_pill.setStyleSheet("""
             QLabel {
@@ -399,7 +399,7 @@ class CardDetailDialog(QDialog):
                 background-color: #343a40;
             }
         """)
-        cv_btn.clicked.connect(lambda: self.cv_requested.emit(self.candidate_data["view_path"]))
+        cv_btn.clicked.connect(lambda: self.cv_requested.emit(self.candidate_data["path"]))
         
         footer_layout.addWidget(summary_btn)
         footer_layout.addWidget(cv_btn)

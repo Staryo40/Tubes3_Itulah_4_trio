@@ -210,7 +210,7 @@ class CVSummaryDialog(QDialog):
         
         if not header or not content:
             print(f"Skipping section with missing header or content: {section}")
-            return 
+            return  
         
 
     def create_flexible_section(self, layout, header, content, section_type):
@@ -277,8 +277,8 @@ class CVSummaryDialog(QDialog):
         """Create bullet-style content with tags/pills"""
         
         # Determine styling based on header type
-        if header.lower() in ['skill', 'skills']:
-            # Skills get special dark gray styling
+        if header.lower() in ['skill', 'skills']:  
+            # Skills get special dark gray styling 
             tag_style = """
                 QLabel {
                     background-color: #6c757d;
@@ -442,8 +442,8 @@ class CVSummaryDialog(QDialog):
             info_layout.addWidget(phone_label)
         
         # Address
-        if 'Address' in self.candidate_data:
-            address_label = QLabel(f"📍 {self.candidate_data['Address']}")
+        if 'address' in self.candidate_data:
+            address_label = QLabel(f"📍 {self.candidate_data['address']}")
             address_label.setStyleSheet("""
                 QLabel {
                     color: #495057;
