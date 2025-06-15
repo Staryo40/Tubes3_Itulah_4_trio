@@ -1,4 +1,4 @@
-from .rsa_encryption import DatabaseEncryption, encrypt_applicant_data, decrypt_applicant_data
+from .encryption import DatabaseEncryption, encrypt_applicant_data, decrypt_applicant_data
 import functools
 from typing import Dict, List, Any, Optional
 

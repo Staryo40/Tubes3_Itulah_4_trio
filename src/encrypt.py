@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from model.db import create_connection, enable_database_encryption
-from model.db_encryption_wrapper import encrypt_applicant_profile
+from model.wrapper import encrypt_applicant_profile
 from mysql.connector import Error
 
 def encrypt_all_force():
