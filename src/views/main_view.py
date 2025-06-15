@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLineEdit, QPushButton, QLabel,
     QHBoxLayout, QMainWindow, QSpinBox, QGridLayout, QFrame, QScrollArea,
-    QToolBar, QAction, QSizePolicy
+    QToolBar, QAction, QSizePolicy, QMessageBox
 )
 from PyQt5.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, QTimer, QSize
 from PyQt5.QtGui import QPixmap, QFont, QCursor, QPainter, QPen
@@ -428,6 +428,51 @@ class MainView(QMainWindow):
         layout.addWidget(spacer)
 
 
+    def show_error_dialog(self, title, message):
+        """Show error dialog with custom styling"""
+        msg_box = QMessageBox(self)
+        msg_box.setIcon(QMessageBox.Warning)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(message)
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        
+        # Apply custom styling with gray palette
+        msg_box.setStyleSheet("""
+            QMessageBox {
+                background-color: #f0f0f0;
+                color: #333333;
+                font-size: 14px;
+                border: 2px solid #cccccc;
+            }
+            QMessageBox QLabel {
+                background-color: transparent;
+                color: #333333;
+                font-size: 14px;
+                padding: 10px;
+            }
+            QMessageBox QPushButton {
+                background-color: #808080;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 8px 20px;
+                font-size: 12px;
+                font-weight: bold;
+                min-width: 80px;
+            }
+            QMessageBox QPushButton:hover {
+                background-color: #707070;
+            }
+            QMessageBox QPushButton:pressed {
+                background-color: #606060;
+            }
+        """)
+        
+        msg_box.exec_()
+
+    def show_validation_error(self, message):
+        """Show validation error with warning icon"""
+        self.show_error_dialog("Input Error", message)
 
     def toggle_algorithm(self, event):
         self.toggle_state = (self.toggle_state + 1) % 3
@@ -498,13 +543,29 @@ class MainView(QMainWindow):
         layout.addWidget(self.search_button)
     
     def on_search_clicked(self):
-        keywords = [word.strip() for word in self.search_bar.text().split(",") if word.strip()]
+        # Get keywords and clean them
+        keywords_text = self.search_bar.text().strip()
+        
+        # Validation 1: Check if search bar is empty
+        if not keywords_text:
+            self.show_validation_error("Please enter at least one keyword to search.")
+            self.search_bar.setFocus()  # Focus back to search bar
+            return
+        
+        # Parse keywords
+        keywords = [word.strip() for word in keywords_text.split(",") if word.strip()]
+        
+        # Validation 2: Check if there are valid keywords after parsing
         if not keywords:
-            return  # Don't search if no keywords
-            
+            self.show_validation_error("Please enter valid keywords separated by commas.\nExample: React, Python, JavaScript")
+            self.search_bar.setFocus()
+            return
+        
+        
         algorithms = ["KMP", "Aho-Corasick", "BM"]
         algorithm = algorithms[self.toggle_state]
         top_matches = self.spin_box.value()
+        
         algo_enum = MatchingAlgorithm.KMP
         if algorithm == "KMP":
             algo_enum = MatchingAlgorithm.KMP
@@ -514,6 +575,7 @@ class MainView(QMainWindow):
             algo_enum = MatchingAlgorithm.AC
         else:
             algo_enum = MatchingAlgorithm.KMP
+        
         self.search_requested.emit(keywords, algo_enum, top_matches)
 
     def update_cards(self, candidates_data):
