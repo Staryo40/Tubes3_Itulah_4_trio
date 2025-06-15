@@ -5,6 +5,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve
 from PyQt5.QtGui import QFont, QColor
 
+from local_enum import TextFormat
+
 class CVSummaryDialog(QDialog):
     def __init__(self, candidate_data, parent=None):
         super().__init__(parent)
@@ -192,26 +194,26 @@ class CVSummaryDialog(QDialog):
 
     def create_dynamic_sections(self, layout):
         """Create sections dynamically based on summary data structure"""
-        summary_data = self.candidate_data.get('summary', [])
-        
-        if not isinstance(summary_data, list):
+        summary_data = self.candidate_data.get('summary', {})
+
+        if not isinstance(summary_data, dict):
+            print("Invalid summary data format. Expected a dictionary.")
             return
-        
-        for section in summary_data:
-            if not isinstance(section, dict):
+
+        for header, value in summary_data.items():
+            if not isinstance(value, dict):
                 continue
-                
-            header = section.get('header', '')
-            section_type = section.get('type', 'list')  # Default to list if no type specified
-            content = section.get('content', [])
+
+            section_type = value.get('type', 'list')  # Default to list if no type specified
+            content = value.get('content', [])
 
             # Create section dynamically based on header and type
             self.create_flexible_section(layout, header, content, section_type)
         
         if not header or not content:
-            print(f"Skipping section with missing header or content: {section}")
-            return  
         
+            print(f"Skipping section with missing header or content: {header}")
+            return
 
     def create_flexible_section(self, layout, header, content, section_type):
         """Create a flexible section that adapts to any header and content"""
@@ -264,9 +266,12 @@ class CVSummaryDialog(QDialog):
         section_layout = QVBoxLayout(section_card)
         section_layout.setContentsMargins(25, 20, 25, 20)
         section_layout.setSpacing(15)
+
+        if len(content) > 10:
+            content = content[:10]  
         
         # Handle different section types
-        if section_type.lower() == 'bullet':
+        if section_type == TextFormat.Bullet:
             self.create_bullet_content(section_layout, content, header)
         else:  # Default to list type
             self.create_list_content(section_layout, content, header)
@@ -428,10 +433,12 @@ class CVSummaryDialog(QDialog):
         info_layout = QVBoxLayout(info_card)
         info_layout.setContentsMargins(25, 20, 25, 20)
         info_layout.setSpacing(12)
+
+        print(f"Creating personal info section with data: {self.candidate_data}")
         
         # Phone
-        if 'Phone' in self.candidate_data:
-            phone_label = QLabel(f"📱 {self.candidate_data['Phone']}")
+        if 'phone' in self.candidate_data:
+            phone_label = QLabel(f"📱 {self.candidate_data['phone']}")
             phone_label.setStyleSheet("""
                 QLabel {
                     color: #495057;
@@ -444,6 +451,8 @@ class CVSummaryDialog(QDialog):
         # Address
         if 'address' in self.candidate_data:
             address_label = QLabel(f"📍 {self.candidate_data['address']}")
+        if 'address' in self.candidate_data:
+            address_label = QLabel(f"📍 {self.candidate_data['address']}")
             address_label.setStyleSheet("""
                 QLabel {
                     color: #495057;
@@ -454,8 +463,8 @@ class CVSummaryDialog(QDialog):
             info_layout.addWidget(address_label)
         
         # Birthdate
-        if 'birthdate' in self.candidate_data:
-            birthdate_label = QLabel(f"📅 {self.candidate_data['birthdate']}")
+        if 'dob' in self.candidate_data:
+            birthdate_label = QLabel(f"📅 {self.candidate_data['dob']}")
             birthdate_label.setStyleSheet("""
                 QLabel {
                     color: #495057;

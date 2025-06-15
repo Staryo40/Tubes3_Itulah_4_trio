@@ -32,9 +32,8 @@ class MainController:
         """Handle search request from view"""
         print(f"Controller: Searching for '{keywords}' using {algorithm}, top {top_matches} matches")
         self.model.current_page = 0
-        # ganti pake fungsi dari aryo
-        self.results = self.model.search_candidates(keywords, algorithm, top_matches, self.data, self.data_path)
-        print(f"results: {self.results}")
+        res_gen = SearchResult(self.data_path, self.data, keywords, top_matches, global_levenshtein_threshold, LevenshteinMethod.WORD, algorithm)
+        self.results = res_gen.search_result()
         self.update_view()
     
     def handle_algorithm_change(self, algorithm_state):
