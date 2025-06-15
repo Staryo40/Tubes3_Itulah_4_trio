@@ -341,7 +341,6 @@ class MainView(QMainWindow):
             }
             QFrame:hover {
                 background-color: #d6d6d6;
-                border: 2px solid #a0a0a0;
                 cursor: pointer;
             }
             QFrame:hover QLabel {

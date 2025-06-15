@@ -207,7 +207,6 @@ class CardDetailDialog(QDialog):
                 padding: 0px;
             }
             QFrame:hover {
-                border-color: #6c757d;
                 background-color: #f8f9fa;
             }
         """)

@@ -65,7 +65,7 @@ class CVSummaryGenerator:
                 filtered[header] = {"type": TextFormat.List, "content": filtered_arr}
             else:
                 bullet_arr = self.bullet_block_to_array(content)
-                filtered[header] = {"type": TextFormat.List, "content": bullet_arr}
+                filtered[header] = {"type": TextFormat.Bullet, "content": bullet_arr}
         return filtered
 
     def split_non_list_chunks(self, content):

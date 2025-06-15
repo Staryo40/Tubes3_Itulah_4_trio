@@ -23,7 +23,6 @@
 #                       }
 #              }
 # }
-from search_result import *
 
 class MainModel:
     def __init__(self):

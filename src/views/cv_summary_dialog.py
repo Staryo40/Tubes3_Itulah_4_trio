@@ -341,13 +341,11 @@ class CVSummaryDialog(QDialog):
             exp_container.setStyleSheet("""
                 QFrame {
                     background-color: #f8f9fa;
-                    border: 1px solid #e9ecef;
                     border-radius: 8px;
                     padding: 0px;
                     margin-bottom: 8px;
                 }
                 QFrame:hover {
-                    border-color: #6c757d;
                     background-color: #f1f3f4;
                 }
             """)
