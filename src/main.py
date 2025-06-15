@@ -3,7 +3,6 @@ from controller import *
 from views import *
 import sys
 from PyQt5.QtWidgets import QApplication
-print(sys.executable)
 # data = get_data()
 # data_path = os.path.join(os.getcwd(), "data", "cv")
 # res_gen = search_result(data_path, data, ["managed", "efficiency", "Presenter"], 1, 2, levenshtein_method.WORD, matching_algorithm.BM)
