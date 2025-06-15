@@ -10,7 +10,6 @@ from .card_detail_dialog import CardDetailDialog
 from local_enum import *
 
 class MainView(QMainWindow):
-    # Signals untuk komunikasi dengan controller
     search_requested = pyqtSignal(list, MatchingAlgorithm, int)  # keywords, algorithm, top_matches
     algorithm_changed = pyqtSignal(int)  # algorithm state
     previous_page_requested = pyqtSignal()
@@ -71,7 +70,6 @@ class MainView(QMainWindow):
         self.main_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.result_layout = QVBoxLayout(self.main_area)
         
-        # Responsive margins
         margin = max(10, min(30, self.width() // 40))
         self.result_layout.setContentsMargins(margin, margin, margin, margin)
         self.result_layout.setSpacing(15)
@@ -84,7 +82,6 @@ class MainView(QMainWindow):
         self.result_layout.addWidget(self.welcome_label)
 
     def update_welcome_font(self):
-        """Update welcome label font size based on window size"""
         if hasattr(self, 'welcome_label'):
             font_size = max(20, min(35, self.width() // 25))
             self.welcome_label.setStyleSheet(f"font-size: {font_size}px; font-weight: bold; color: #a7afb6;")
@@ -105,7 +102,6 @@ class MainView(QMainWindow):
                     if child_widget is not None:
                         child_widget.deleteLater()
         
-        # Reset references
         self.cards_container = None
         self.cards_layout = None
         self.result_title = None
@@ -117,15 +113,12 @@ class MainView(QMainWindow):
     def update_header_card_responsive(self):
         """Update header card styling based on window size"""
         if hasattr(self, 'result_header_card'):
-            # Responsive width - max 600px or 80% of window width
             max_width = min(600, int(self.width() * 0.8))
             self.result_header_card.setMaximumWidth(max_width)
             
-            # Responsive font sizes
             title_font_size = max(20, min(28, self.width() // 30))
             subtitle_font_size = max(12, min(14, self.width() // 60))
             
-            # Update title font
             if hasattr(self, 'result_title'):
                 self.result_title.setStyleSheet(f"""
                     QLabel {{
@@ -138,7 +131,6 @@ class MainView(QMainWindow):
                     }}
                 """)
             
-            # Update subtitle font
             if hasattr(self, 'result_subtitle'):
                 self.result_subtitle.setStyleSheet(f"""
                     QLabel {{
@@ -154,7 +146,6 @@ class MainView(QMainWindow):
     def setup_right_panel_content(self, result_count, execution_time):
         self.cleanup_right_panel()
         
-        # Create header card container (TETAP ADA)
         self.result_header_card = QFrame()
         self.result_header_card.setFrameShape(QFrame.StyledPanel)
         self.result_header_card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -167,13 +158,11 @@ class MainView(QMainWindow):
             }
         """)
         
-        # Header card layout
         header_card_layout = QVBoxLayout(self.result_header_card)
         header_card_layout.setContentsMargins(20, 15, 20, 15)
         header_card_layout.setSpacing(0)
         header_card_layout.setAlignment(Qt.AlignCenter)
         
-        # Main title
         self.result_title = QLabel("Search Results")
         self.result_title.setAlignment(Qt.AlignCenter)
         self.result_title.setStyleSheet("""
@@ -189,7 +178,6 @@ class MainView(QMainWindow):
         """)
         header_card_layout.addWidget(self.result_title)
         
-        # Subtitle with result count and execution time
         self.result_subtitle = QLabel(f"{result_count} CVs scanned in {execution_time:.2f}s")
         self.result_subtitle.setAlignment(Qt.AlignCenter)
         self.result_subtitle.setStyleSheet("""
@@ -204,7 +192,6 @@ class MainView(QMainWindow):
         """)
         header_card_layout.addWidget(self.result_subtitle)
         
-        # Add header card to main layout (CENTERED)
         header_container = QHBoxLayout()
         header_container.addStretch()
         header_container.addWidget(self.result_header_card, 0)
@@ -212,26 +199,21 @@ class MainView(QMainWindow):
         
         self.result_layout.addLayout(header_container)
         
-        # Add spacing between header and cards
         spacer = QWidget()
         spacer.setFixedHeight(15)
         self.result_layout.addWidget(spacer)
 
-        # Cards container with 2x3 grid layout
         self.cards_container = QWidget()
         self.cards_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         self.cards_layout = QGridLayout(self.cards_container)
         self.cards_layout.setAlignment(Qt.AlignTop | Qt.AlignCenter)
         
-        # Set initial spacing
         spacing = self.get_card_spacing()
         self.cards_layout.setSpacing(spacing)
         
-        # Add cards container to main layout
         self.result_layout.addWidget(self.cards_container, 1)  # Give it stretch factor
 
-        # Pagination at bottom
         self.setup_pagination()
         self.result_layout.addLayout(self.pagination_layout)
 
@@ -260,34 +242,27 @@ class MainView(QMainWindow):
         layout.setAlignment(self.image_label, Qt.AlignCenter)
 
     def get_responsive_columns(self):
-        """Always return 3 columns (maximum)"""
         return 3
 
     def get_max_cards_per_page(self):
-        """Maximum 6 cards (2 rows x 3 columns)"""
         return 6
 
     def get_responsive_card_size(self):
-        """Calculate card size based on percentage of available space"""
         available_width = self.main_area.width() - 60  # Account for margins (30px each side)
         available_height = self.main_area.height() - 200  # Account for header, margins, and pagination
         
-        # Card width: 30% of available width (with some spacing)
         card_width = int(available_width * 0.30)  # 30% of available width
         card_width = max(250, min(400, card_width))  # Min 250px, max 400px
         
-        # Card height: 40% of available height for 2 rows
         card_height = int(available_height * 0.40)  # 40% of available height
         card_height = max(180, min(300, card_height))  # Min 180px, max 300px
         
         return QSize(card_width, card_height)
 
     def get_card_spacing(self):
-        """Calculate spacing between cards based on available space"""
         available_width = self.main_area.width() - 60
         card_width = self.get_responsive_card_size().width()
         
-        # Calculate spacing to distribute cards evenly
         total_card_width = card_width * 3  # 3 columns
         remaining_space = available_width - total_card_width
         spacing = max(10, remaining_space // 4)  # Divide remaining space
@@ -321,7 +296,6 @@ class MainView(QMainWindow):
         layout.addWidget(self.search_bar)
 
     def setAlgorithmOptions(self, layout):
-        # Algorithm label
         self.option_label = QLabel("Search Algorithm:", self)
         self.option_label.setStyleSheet("""
             QLabel {
@@ -333,7 +307,6 @@ class MainView(QMainWindow):
         """)
         layout.addWidget(self.option_label)
         
-        # Create toggle container
         toggle_container = QFrame()
         toggle_container.setStyleSheet("""
             QFrame {
@@ -347,7 +320,6 @@ class MainView(QMainWindow):
         container_layout.setContentsMargins(5, 5, 5, 5)
         container_layout.setSpacing(8)
         
-        # Top row: KMP - Toggle - BM
         top_row = QFrame()
         top_row.setStyleSheet("QFrame { background-color: transparent; }")
         top_layout = QHBoxLayout(top_row)
@@ -364,7 +336,6 @@ class MainView(QMainWindow):
         """)
         top_layout.addWidget(self.kmp_label)
         
-        # Toggle switch
         self.algorithm_toggle = QFrame()
         self.algorithm_toggle.setFixedSize(120, 30)
         self.algorithm_toggle.setStyleSheet("""
@@ -402,7 +373,6 @@ class MainView(QMainWindow):
         
         container_layout.addWidget(top_row)
         
-        # Bottom row: Aho-Corasick
         bottom_row = QFrame()
         bottom_row.setStyleSheet("QFrame { background-color: transparent; }")
         bottom_layout = QHBoxLayout(bottom_row)
@@ -436,7 +406,6 @@ class MainView(QMainWindow):
         msg_box.setText(message)
         msg_box.setStandardButtons(QMessageBox.Ok)
         
-        # Apply custom styling with gray palette
         msg_box.setStyleSheet("""
             QMessageBox {
                 background-color: #f0f0f0;
@@ -471,7 +440,6 @@ class MainView(QMainWindow):
         msg_box.exec_()
 
     def show_validation_error(self, message):
-        """Show validation error with warning icon"""
         self.show_error_dialog("Input Error", message)
 
     def toggle_algorithm(self, event):
@@ -543,19 +511,15 @@ class MainView(QMainWindow):
         layout.addWidget(self.search_button)
     
     def on_search_clicked(self):
-        # Get keywords and clean them
         keywords_text = self.search_bar.text().strip()
         
-        # Validation 1: Check if search bar is empty
         if not keywords_text:
             self.show_validation_error("Please enter at least one keyword to search.")
             self.search_bar.setFocus()  # Focus back to search bar
             return
         
-        # Parse keywords
         keywords = [word.strip() for word in keywords_text.split(",") if word.strip()]
         
-        # Validation 2: Check if there are valid keywords after parsing
         if not keywords:
             self.show_validation_error("Please enter valid keywords separated by commas.\nExample: React, Python, JavaScript")
             self.search_bar.setFocus()
@@ -579,26 +543,21 @@ class MainView(QMainWindow):
         self.search_requested.emit(keywords, algo_enum, top_matches)
 
     def update_cards(self, candidates_data):
-        # Clear existing cards
         while self.cards_layout.count():
             item = self.cards_layout.takeAt(0)
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
 
-        # Limit to maximum 6 cards (2 rows x 3 columns)
         max_cards = self.get_max_cards_per_page()
         display_data = candidates_data[:max_cards]
         
-        # Get responsive parameters
-        cols = 3  # Always 3 columns
+        cols = 3  
         card_size = self.get_responsive_card_size()
         spacing = self.get_card_spacing()
         
-        # Set layout spacing
         self.cards_layout.setSpacing(spacing)
         
-        # Add cards starting from top-left, going right then down
         for index, candidate in enumerate(display_data):
             row = index // cols  # 0 or 1 (max 2 rows)
             col = index % cols   # 0, 1, or 2 (3 columns)
@@ -606,15 +565,12 @@ class MainView(QMainWindow):
             card = self.create_card(candidate, card_size)
             self.cards_layout.addWidget(card, row, col)
         
-        # Set column stretch to distribute space evenly
         for col in range(cols):
             self.cards_layout.setColumnStretch(col, 1)
         
-        # Set row stretch for even distribution
         self.cards_layout.setRowStretch(0, 1)
         self.cards_layout.setRowStretch(1, 1)
         
-        # Add stretch to empty cells if needed
         total_cards = len(display_data)
         if total_cards < max_cards:
             # Fill remaining cells with spacers to maintain layout
@@ -628,24 +584,19 @@ class MainView(QMainWindow):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         
-        # Update margins based on window size
         if hasattr(self, 'result_layout'):
             margin = max(10, min(30, self.width() // 40))
             self.result_layout.setContentsMargins(margin, margin, margin, margin)
         
-        # Update left panel margins
         if hasattr(self, 'left_panel_layout'):
             margin = max(10, min(20, self.width() // 60))
             self.left_panel_layout.setContentsMargins(margin, margin, margin, margin)
         
-        # Update header card responsiveness
         self.update_header_card_responsive()
         
-        # Resize loading overlay if it exists
         if hasattr(self, 'loading_overlay') and self.loading_overlay:
             self.loading_overlay.resize(self.main_area.size())
         
-        # Update cards layout if it exists
         if hasattr(self, 'cards_layout') and hasattr(self, 'model'):
             if not hasattr(self, 'resize_timer'):
                 self.resize_timer = QTimer()
@@ -658,7 +609,6 @@ class MainView(QMainWindow):
         if hasattr(self, 'model') and hasattr(self.model, 'get_card_result_for_current_page'):
             current_data = self.model.get_card_result_for_current_page()
             if current_data:
-                # Recalculate spacing
                 if hasattr(self, 'cards_layout'):
                     spacing = self.get_card_spacing()
                     self.cards_layout.setSpacing(spacing)
@@ -672,11 +622,9 @@ class MainView(QMainWindow):
         card = QFrame()
         card.setFrameShape(QFrame.StyledPanel)
         
-        # Use minimum size instead of fixed size for better responsiveness
         card.setMinimumSize(card_size)
         card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
-        # Responsive font sizes based on card size
         name_font_size = max(9, min(14, card_size.width() // 25))
         content_font_size = max(8, min(11, card_size.width() // 30))
         small_font_size = max(7, min(9, card_size.width() // 35))
@@ -716,7 +664,6 @@ class MainView(QMainWindow):
         card_layout.setContentsMargins(margin, margin, margin, margin)
         card_layout.setSpacing(max(6, card_size.height() // 35))
         
-        # Header with responsive font
         header_layout = QHBoxLayout()
         name_label = QLabel(candidate_data["name"])
         name_label.setStyleSheet(f"""
@@ -745,7 +692,6 @@ class MainView(QMainWindow):
         header_layout.addWidget(matches_label, 1)
         card_layout.addLayout(header_layout)
         
-        # Keywords section with responsive content
         keywords_label = QLabel("Matched keywords:")
         keywords_label.setStyleSheet(f"""
             QLabel {{
@@ -761,7 +707,6 @@ class MainView(QMainWindow):
         keywords_preview_layout.setContentsMargins(margin//2, 0, 0, 0)
         keywords_preview_layout.setSpacing(3)
         
-        # Adjust number of preview items based on card height
         max_preview = 3 if card_size.height() > 200 else 2
         max_preview = min(max_preview, len(candidate_data["search_res"]))
         
@@ -817,11 +762,9 @@ class MainView(QMainWindow):
         self.next_button.setEnabled(can_next)
 
     def show_loading_animation(self):
-        # Disable search button
         self.search_button.setEnabled(False)
         self.search_button.setText("Searching...")
         
-        # Create loading overlay
         self.loading_overlay = QWidget(self.main_area)
         self.loading_overlay.setStyleSheet("""
             QWidget {
@@ -833,11 +776,9 @@ class MainView(QMainWindow):
         overlay_layout = QVBoxLayout(self.loading_overlay)
         overlay_layout.setAlignment(Qt.AlignCenter)
         
-        # Add loading widget
         self.loading_widget = LoadingWidget()
         overlay_layout.addWidget(self.loading_widget, alignment=Qt.AlignCenter)
         
-        # Add loading text
         loading_label = QLabel("Searching CVs...")
         loading_label.setAlignment(Qt.AlignCenter)
         loading_label.setStyleSheet("""
@@ -850,14 +791,11 @@ class MainView(QMainWindow):
         """)
         overlay_layout.addWidget(loading_label)
         
-        # Position overlay
         self.loading_overlay.resize(self.main_area.size())
         self.loading_overlay.show()
         
-        # Start animation
         self.loading_widget.start_animation()
         
-        # Fade in animation
         self.fade_in_animation = QPropertyAnimation(self.loading_overlay, b"windowOpacity")
         self.fade_in_animation.setDuration(300)
         self.fade_in_animation.setStartValue(0.0)
@@ -867,11 +805,9 @@ class MainView(QMainWindow):
 
     def hide_loading_animation(self):
         if hasattr(self, 'loading_overlay') and self.loading_overlay:
-            # Stop loading animation
             if hasattr(self, 'loading_widget'):
                 self.loading_widget.stop_animation()
             
-            # Fade out animation
             self.fade_out_animation = QPropertyAnimation(self.loading_overlay, b"windowOpacity")
             self.fade_out_animation.setDuration(300)
             self.fade_out_animation.setStartValue(1.0)
@@ -880,7 +816,6 @@ class MainView(QMainWindow):
             self.fade_out_animation.finished.connect(self.cleanup_loading_overlay)
             self.fade_out_animation.start()
         
-        # Re-enable search button
         self.search_button.setEnabled(True)
         self.search_button.setText("Search")
 
@@ -891,7 +826,6 @@ class MainView(QMainWindow):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        # Resize loading overlay if it exists
         if hasattr(self, 'loading_overlay') and self.loading_overlay:
             self.loading_overlay.resize(self.main_area.size())
         
