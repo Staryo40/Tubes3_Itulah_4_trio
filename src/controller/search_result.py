@@ -106,24 +106,28 @@ class SearchResult:
         end = time.time()
         exec_time = end - start
 
-        sorted_result = dict(sorted(
+        sorted_items = sorted(
             cv_result.items(),
-            key=lambda item: (
-                not self.all_keywords_matched(item[1]),         # False < True (want all keywords matched)
-                not self.all_exact_keywords_matched(item[1]),   # False < True (want all exact matches)
-                -item[1]["total_match"]                         # Higher total_match is better
-            )
-        )[:self.top_n])
+            key=lambda item: -self.compute_priority_index(item[1])
+        )
+        top_items = sorted_items[:self.top_n]
+        sorted_result = dict(top_items)
         result["time"] = exec_time
         result["result"] = sorted_result
         return result
     
-    def all_keywords_matched(self, cv_data):
-        return all(entry["occurrence"] > 0 for entry in cv_data["search_res"].values())
+    def compute_priority_index(self, cv_data):
+        score = 0
+        for entry in cv_data["search_res"].values():
+            t = entry["type"].name
+            occ = entry["occurrence"]
+            if t == "Exact":
+                score += 1000 + occ
+            elif t == "Similar":
+                score += 100 +  occ
+            # NotFound or other types → score += 0
+        return score
 
-    def all_exact_keywords_matched(self, cv_data):
-        return all(entry["type"].name == "Exact" and entry["occurrence"] > 0
-                for entry in cv_data["search_res"].values())
 
 if __name__ == "__main__":     
     cv_dic = {
