@@ -106,10 +106,19 @@ class SearchResult:
         end = time.time()
         exec_time = end - start
 
-        sorted_result = dict(sorted(cv_result.items(), key=lambda item: item[1]["total_match"], reverse=True)[:self.top_n])
+        sorted_result = dict(sorted(
+            cv_result.items(),
+            key=lambda item: (
+                not self.all_keywords_matched(item[1]),     # False < True, so True means lower priority
+                -item[1]["total_match"]                     # sort total_match descending
+            )
+        )[:self.top_n])
         result["time"] = exec_time
         result["result"] = sorted_result
         return result
+    
+    def all_keywords_matched(self, cv_data):
+        return all(entry["occurrence"] > 0 for entry in cv_data["search_res"].values())
 
 if __name__ == "__main__":     
     cv_dic = {
