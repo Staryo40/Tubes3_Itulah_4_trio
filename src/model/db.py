@@ -345,10 +345,8 @@ def init_database_encryption(enable=False):
     """Initialize database encryption settings"""
     if enable:
         enable_database_encryption()
-        print("🔐 Database encryption enabled - New data will be encrypted")
     else:
         disable_database_encryption()
-        print("🔓 Database encryption disabled - Working with existing unencrypted data")
 
 def get_encryption_status():
     """Get current encryption status"""
@@ -358,10 +356,8 @@ def toggle_encryption():
     """Toggle encryption on/off"""
     if is_database_encryption_enabled():
         disable_database_encryption()
-        print("🔓 Encryption disabled")
     else:
         enable_database_encryption()
-        print("🔐 Encryption enabled")
 
 # ============= MANUAL ENCRYPTION FUNCTIONS (OPTIONAL) =============
 
@@ -426,8 +422,6 @@ def migrate_existing_data_to_encrypted():
     Utility untuk migrate data existing ke format encrypted
     HATI-HATI: Backup database sebelum menjalankan!
     """
-    print("⚠️  WARNING: This will encrypt all existing data!")
-    print("   Make sure to backup your database first!")
     
     confirmation = input("Continue? (yes/no): ")
     if confirmation.lower() != 'yes':
@@ -478,7 +472,7 @@ def migrate_existing_data_to_encrypted():
         print("Migration completed successfully!")
         
     except Error as e:
-        print(f"❌ Migration error: {e}")
+        print(f"Migration error: {e}")
         conn.rollback()
     finally:
         cursor.close()

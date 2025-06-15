@@ -67,7 +67,7 @@ class EncryptedDatabaseWrapper:
             if decrypted:
                 successful_decryptions += 1
         
-        print(f"✓ Decrypted {successful_decryptions}/{len(encrypted_list)} records successfully")
+        print(f"Decrypted {successful_decryptions}/{len(encrypted_list)} records successfully")
         return decrypted_list
 
 # Global instance

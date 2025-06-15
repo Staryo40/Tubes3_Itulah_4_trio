@@ -134,7 +134,6 @@ class DatabaseEncryption:
                     
                     # Save mapping
                     save_mapping(self.encrypt_map, self.decrypt_map)
-                    print(f"🔐 Encrypted {field}: '{original_value}' → '{encrypted_value}'")
                 
                 encrypted_data[field] = encrypted_value
         
@@ -157,7 +156,6 @@ class DatabaseEncryption:
                 if encrypted_value in self.decrypt_map:
                     decrypted_value = self.decrypt_map[encrypted_value]
                     decrypted_data[field] = decrypted_value
-                    print(f"🔓 Mapped decrypt {field}: '{encrypted_value}' → '{decrypted_value}'")
                 else:
                     # Try direct decryption
                     decrypted_value = self.encryption.decrypt(encrypted_value)
@@ -167,7 +165,6 @@ class DatabaseEncryption:
                         self.decrypt_map[encrypted_value] = decrypted_value
                         self.encrypt_map[decrypted_value] = encrypted_value
                         save_mapping(self.encrypt_map, self.decrypt_map)
-                        print(f"🔓 Direct decrypt {field}: '{encrypted_value}' → '{decrypted_value}'")
         
         return decrypted_data
 
@@ -207,7 +204,6 @@ if __name__ == "__main__":
         encrypted = enc.encrypt(test_str)
         decrypted = enc.decrypt(encrypted)
         success = test_str == decrypted
-        print(f"'{test_str}' → '{encrypted}' → '{decrypted}' [{'✅' if success else '❌'}]")
     
     print("\n=== DATABASE ENCRYPTION TEST ===")
     # Database encryption test
@@ -231,7 +227,7 @@ if __name__ == "__main__":
     print(f"\n🎯 Overall decryption successful: {success}")
     
     if not success:
-        print("❌ Failed fields:")
+        print("Failed fields:")
         for field in sensitive_fields:
             if field in test_data and field in decrypted:
                 if test_data[field] != decrypted[field]:
