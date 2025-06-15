@@ -1,4 +1,6 @@
 SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci';
+CREATE DATABASE IF NOT EXISTS ats_system;
+USE ats_system;
 
 SET FOREIGN_KEY_CHECKS = 0;
 

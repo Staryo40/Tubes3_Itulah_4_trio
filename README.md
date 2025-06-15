@@ -16,7 +16,11 @@ While fuzzy matching only uses one, and is only a backup and used when the exact
 1. Python  
 
 ## Program Setup
-## Downloading dataset
+### Injecting SQL database
+```bash
+mysql -u root -p < data/tubes3_seeding.sql 
+```
+### Downloading dataset
 ```bash
 python src/download_dataset.py 
 ```
