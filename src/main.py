@@ -28,6 +28,13 @@ from PyQt5.QtWidgets import QApplication
 
 def main():
     data = get_data()
+    # i = 0
+    # for key, value in data.items():
+    #     i += 1
+    #     # print(F"Applicant number {i+1} with key {key}: {value}")
+    #     # if i == 5:
+    #     #     break
+    # print(f"Number of applicants: {i}")
     data_path = os.path.join(os.getcwd(), "data", "data")
 
     app = QApplication(sys.argv)

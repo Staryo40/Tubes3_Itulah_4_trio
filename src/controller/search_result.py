@@ -90,15 +90,15 @@ class SearchResult:
     def search_result(self):
         result = {"time": 0, "cv_num": len(self.cv_dic), "result": {}}
 
-        cv_transformed_dic = {}
-        for key, content in self.cv_dic.items():
-            cv_transformed_dic[content["detail_id"]] = content
+        # cv_transformed_dic = {}
+        # for key, content in self.cv_dic.items():
+        #     cv_transformed_dic[content["detail_id"]] = content
 
         start = time.time()
 
         cv_result = {}
         with ThreadPoolExecutor() as executor:
-            futures = [executor.submit(self.process_cv, id, cv_data) for id, cv_data in cv_transformed_dic.items()]
+            futures = [executor.submit(self.process_cv, id, cv_data) for id, cv_data in self.cv_dic.items()]
             for future in as_completed(futures):
                 id, res = future.result()
                 cv_result[str(id)] = res

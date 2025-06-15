@@ -8,9 +8,9 @@ def get_data() -> Dict[int, Dict[str, Any]]:
         raw_data = get_cv_list()
         result = {}
         for row in raw_data:
-            applicant_id = row["applicant_id"]
-            data = {k: v for k, v in row.items() if k != "applicant_id"}
-            result[applicant_id] = data
+            detail_id = row["detail_id"]
+            data = {k: v for k, v in row.items() if k != "detail_id"}
+            result[detail_id] = data
         return result
     except Exception as e:
         print(f"Error getting data: {e}")
