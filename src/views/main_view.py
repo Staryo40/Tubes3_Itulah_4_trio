@@ -1,7 +1,8 @@
 import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLineEdit, QPushButton, QLabel,
-    QHBoxLayout, QMainWindow, QSpinBox, QGridLayout, QFrame, QScrollArea
+    QHBoxLayout, QMainWindow, QSpinBox, QGridLayout, QFrame, QScrollArea,
+    QToolBar, QAction
 )
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QFont, QCursor
@@ -34,13 +35,14 @@ class MainView(QMainWindow):
         self.main_layout.addWidget(self.main_area, 3)
 
         self.setWindowTitle("CVSearch")
-        self.showFullScreen()
+
+
     
     def setup_left_panel(self):
         self.left_panel = QWidget()
         self.left_panel.setStyleSheet("""
             QWidget {
-                background-color: white;
+                background-color: #e8e7e3;
                 border-right: 1px solid #e0e0e0;
             }
         """)
@@ -374,6 +376,19 @@ class MainView(QMainWindow):
                 background-color: #d6d6d6;
                 cursor: pointer;
             }
+            /* Sinkronisasi hover untuk semua child components */
+            QFrame:hover QLabel {
+                background-color: transparent;
+            }
+            QFrame:hover QLabel[class="keyword"] {
+                color: #333333;
+            }
+            QFrame:hover QLabel[class="more"] {
+                color: #555555;
+            }
+            QFrame:hover QLabel[class="click"] {
+                color: #555555;
+            }
         """)
         
         card.setCursor(QCursor(Qt.PointingHandCursor))
@@ -390,7 +405,6 @@ class MainView(QMainWindow):
         name_font.setBold(True)
         name_font.setPointSize(12)
         name_label.setFont(name_font)
-
 
         matches_text = f"{candidate_data['total_match']} match"
         if candidate_data['total_match'] != 1:
@@ -418,16 +432,19 @@ class MainView(QMainWindow):
             keyword_text += "occurrence" if occurrences == 1 else "occurrences"
             
             keyword_label = QLabel(keyword_text)
+            keyword_label.setProperty("class", "keyword")  # Set property untuk styling
             keyword_label.setStyleSheet("""
                 QLabel {
                     padding: 1px 0px;
                     font-size: 10px;
+                    background-color: transparent;
                 }
             """)
             keywords_preview_layout.addWidget(keyword_label)
 
         if len(candidate_data["search_res"]) > 3:
             more_label = QLabel(f"... and {len(candidate_data['search_res']) - 3} more")
+            more_label.setProperty("class", "more")  # Set property untuk styling
             more_label.setStyleSheet("""
                 QLabel {
                     padding: 1px 0px;
@@ -443,6 +460,7 @@ class MainView(QMainWindow):
         card_layout.addStretch()
         
         click_label = QLabel("Click to view details")
+        click_label.setProperty("class", "click")  # Set property untuk styling
         click_label.setAlignment(Qt.AlignCenter)
         click_label.setStyleSheet("""
             QLabel {
@@ -450,13 +468,14 @@ class MainView(QMainWindow):
                 color: #666666;
                 font-style: italic;
                 padding: 5px;
+                background-color: transparent;
             }
         """)
         card_layout.addWidget(click_label)
         
         card.setFixedSize(300, 200)
         return card
-    
+
     def show_card_detail(self, candidate_data):
         """Show detailed card popup"""
         dialog = CardDetailDialog(candidate_data, self)
