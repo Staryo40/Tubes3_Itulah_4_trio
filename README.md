@@ -16,6 +16,10 @@ While fuzzy matching only uses one, and is only a backup and used when the exact
 1. Python  
 
 ## Program Setup
+## Downloading dataset
+```bash
+python src/download_dataset.py 
+```
 ### Setting up .env
 In the root directory of the project there is a file called ".envi". In that file, replace the password with your actual mysql password  
 For example, your password is "sql', then in .envi, put:
