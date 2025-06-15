@@ -2,12 +2,17 @@ import os
 import subprocess
 import platform
 import webbrowser
-from models.candidate_model import CandidateModel
+from model import *
+from controller import *
+
+global_levenshtein_threshold = 2
 
 class MainController:
     def __init__(self, view, model, data, data_path):
         self.view = view
         self.model = model
+        self.data = data
+        self.data_path = data_path
         self.connect_signals()
         self.results = {}
         self.data = data
@@ -28,12 +33,13 @@ class MainController:
         self.model.load_sample_data()
         self.update_view()
     
-    def handle_search(self, keywords, algorithm, top_matches):
+    def handle_search(self, keywords, algorithm: MatchingAlgorithm, top_matches):
         """Handle search request from view"""
         print(f"Controller: Searching for '{keywords}' using {algorithm}, top {top_matches} matches")
         self.model.current_page = 0
         res_gen = SearchResult(self.data_path, self.data, keywords, top_matches, global_levenshtein_threshold, LevenshteinMethod.WORD, algorithm)
         self.results = res_gen.search_result()
+        # print(f"results: {self.results}")
         self.update_view()
     
     def handle_algorithm_change(self, algorithm_state):
@@ -62,8 +68,9 @@ class MainController:
     
     def handle_cv_request(self, path):
         """Handle CV view request - Open PDF file"""
-        print(f"Controller: Opening CV PDF from {path}")
-        self.open_pdf_file(os.path.join(self.data_path, path))
+        full_path = os.path.join(self.data_path, path)
+        print(f"Controller: Opening CV PDF from {full_path}")
+        self.open_pdf_file(full_path)
     
     def open_pdf_file(self, file_path):
         """Open PDF file with system default PDF viewer"""

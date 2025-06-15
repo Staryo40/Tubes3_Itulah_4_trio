@@ -1,7 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
 from typing import List, Dict, Optional
-from config import DB_CONFIG
+from .config import DB_CONFIG
 
 def create_connection():
     """Buat koneksi database"""
@@ -21,17 +21,17 @@ def test_connection():
 
 # ============= APPLICANT OPERATIONS =============
 
-def add_applicant(first, last, dob, email, phone, address):
-    """Tambah pelamar baru"""
+def add_applicant(first, last, dob, phone, address):
+    """Tambah pelamar baru - UPDATED: Hapus email (tidak ada di tubes3_seeding.sql)"""
     conn = create_connection()
     if not conn:
         return None
     try:
         cursor = conn.cursor()
         sql = """INSERT INTO ApplicantProfile 
-                 (first_name, last_name, date_of_birth, email, phone_number, address)
-                 VALUES (%s, %s, %s, %s, %s, %s)"""
-        cursor.execute(sql, (first, last, dob, email, phone, address))
+                 (first_name, last_name, date_of_birth, phone_number, address)
+                 VALUES (%s, %s, %s, %s, %s)"""
+        cursor.execute(sql, (first, last, dob, phone, address))
         conn.commit()
         return cursor.lastrowid
     except Error as e:
@@ -98,7 +98,7 @@ def add_application(applicant_id, role, cv_path):
 def get_cv_list():
     """
     Ambil daftar CV, hasil JOIN ApplicantProfile dan ApplicationDetail,
-    field sesuai skema SQL terbaru.
+    field sesuai skema SQL terbaru - UPDATED: Hapus email karena tidak ada di tubes3_seeding.sql
     """
     conn = create_connection()
     if not conn:
@@ -111,7 +111,6 @@ def get_cv_list():
             ap.first_name,
             ap.last_name,
             ap.date_of_birth,
-            ap.email,
             ap.phone_number,
             ap.address,
             ad.detail_id,
