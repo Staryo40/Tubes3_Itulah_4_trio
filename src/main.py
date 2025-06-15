@@ -15,7 +15,6 @@ from PyQt5.QtWidgets import QApplication
 #     print("name:", content["name"])
 #     print("dob:", content["dob"])
 #     print("address:", content["address"])
-#     print("email:", content["email"])
 #     print("phone:", content["phone"])
 #     print("role:", content["role"])
 #     print("path:", content["path"])
@@ -30,7 +29,8 @@ from PyQt5.QtWidgets import QApplication
 
 def main():
     data = get_data()
-    data_path = os.path.join(os.getcwd(), "data", "cv")
+    # print(data)
+    data_path = os.path.join(os.getcwd())
 
     app = QApplication(sys.argv)
     

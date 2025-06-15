@@ -10,7 +10,6 @@ import time
 #     "first_name": str,
 #     "last_name": str,
 #     "date_of_birth": date,
-#     "email": str,
 #     "phone_number": str,
 #     "address": str,
 #     "detail_id": int,
@@ -26,7 +25,6 @@ import time
 #              "cv_id": {
 #                        "name": val,
 #                        "dob": val,
-#                        "email": val,
 #                        "address": val,
 #                        "phone": val,
 #                        "role": val,
@@ -79,7 +77,6 @@ class SearchResult:
             "name": cv_data["first_name"] + " " + cv_data["last_name"],
             "dob": cv_data["date_of_birth"],
             "address": cv_data["address"],
-            "email": cv_data["email"],
             "phone": cv_data["phone_number"],
             "role": cv_data["application_role"],
             "path": cv_data["cv_path"],
