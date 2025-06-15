@@ -29,8 +29,7 @@ from PyQt5.QtWidgets import QApplication
 
 def main():
     data = get_data()
-    # print(data)
-    data_path = os.path.join(os.getcwd())
+    data_path = os.path.join(os.getcwd(), "data", "data")
 
     app = QApplication(sys.argv)
     
