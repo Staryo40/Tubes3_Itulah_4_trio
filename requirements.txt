@@ -1,3 +1,7 @@
+certifi==2025.6.15
+charset-normalizer==3.4.2
+idna==3.10
+kagglehub==0.3.12
 mysql==0.0.3
 mysql-connector==2.2.9
 mysql-connector-python==9.3.0
@@ -10,3 +14,7 @@ PyQt5-Qt5==5.15.17
 PyQt5_sip==12.17.0
 pytesseract==0.3.13
 python-dotenv==1.1.0
+PyYAML==6.0.2
+requests==2.32.4
+tqdm==4.67.1
+urllib3==2.4.0
