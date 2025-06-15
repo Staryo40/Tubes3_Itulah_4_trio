@@ -62,7 +62,22 @@ class MainView(QMainWindow):
         self.result_layout.setContentsMargins(20, 20, 20, 20)
         self.result_layout.setSpacing(15)
 
+    def cleanup_right_panel(self):
+        """Clear the right panel content"""
+        while self.result_layout.count():
+            item = self.result_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+        
+        self.cards_container = None
+        self.cards_layout = None
+        self.result_title = None
+        self.result_subtitle = None
+        self.pagination_layout = None
+
     def setup_right_panel_content(self, result_count, execution_time):
+        self.cleanup_right_panel()
         # Main title
         self.result_title = QLabel("Results")
         self.result_title.setAlignment(Qt.AlignCenter)
