@@ -40,6 +40,7 @@ class MainController:
         res_gen = SearchResult(self.data_path, self.data, keywords, top_matches, global_levenshtein_threshold, LevenshteinMethod.WORD, algorithm)
         self.results = res_gen.search_result()
         # print(f"results: {self.results}")
+        self.view.setup_right_panel_content(self.results['cv_num'], self.results['time'])
         self.update_view()
     
     def handle_algorithm_change(self, algorithm_state):
