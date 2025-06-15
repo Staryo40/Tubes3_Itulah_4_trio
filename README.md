@@ -1,6 +1,7 @@
 # Tugas Besar 3 Strategi Algoritma 2025  
+
 <p align="center">
-<img src="https://media1.tenor.com/m/x8v1oNUOmg4AAAAd/rickroll-roll.gif" alt="Application interface" width="500"/>
+<img src="img/CVMatcher.gif" alt="Application interface" width="500"/>
 </p>
 
 ## ATS Application using Exact String Matching and Fuzzy String Matching
