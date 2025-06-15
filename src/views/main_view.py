@@ -374,9 +374,6 @@ class MainView(QMainWindow):
                 background-color: #d6d6d6;
                 cursor: pointer;
             }
-            QFrame:hover QLabel {
-                color: #2c3e50;
-            }
         """)
         
         card.setCursor(QCursor(Qt.PointingHandCursor))
@@ -393,7 +390,8 @@ class MainView(QMainWindow):
         name_font.setBold(True)
         name_font.setPointSize(12)
         name_label.setFont(name_font)
-        
+
+
         matches_text = f"{candidate_data['total_match']} match"
         if candidate_data['total_match'] != 1:
             matches_text += "es"
@@ -436,6 +434,7 @@ class MainView(QMainWindow):
                     font-size: 10px;
                     font-style: italic;
                     color: #666666;
+                    background-color: transparent;
                 }
             """)
             keywords_preview_layout.addWidget(more_label)

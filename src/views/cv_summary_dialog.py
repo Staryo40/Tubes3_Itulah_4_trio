@@ -81,6 +81,7 @@ class CVSummaryDialog(QDialog):
                 font-size: 24px;
                 font-weight: 700;
                 letter-spacing: -0.3px;
+                background-color: transparent;
             }
         """)
         header_layout.addWidget(title_label)
@@ -94,6 +95,7 @@ class CVSummaryDialog(QDialog):
                 font-weight: 800;
                 letter-spacing: -0.8px;
                 margin-top: 5px;
+                background-color: transparent;
             }
         """)
         header_layout.addWidget(name_label)
@@ -102,43 +104,9 @@ class CVSummaryDialog(QDialog):
         info_container = QHBoxLayout()
         info_container.setContentsMargins(0, 8, 0, 0)
         info_container.setSpacing(12)
+    
         
-        # Matches pill
-        matches_count = self.candidate_data.get('matches', 0)
-        matches_pill = QLabel(f"🎯 {matches_count} matches")
-        matches_pill.setStyleSheet("""
-            QLabel {
-                background-color: rgba(255, 255, 255, 0.25);
-                color: white;
-                padding: 8px 16px;
-                border-radius: 16px;
-                font-size: 12px;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
-        """)
-        matches_pill.setFixedHeight(32)
         
-        # Experience pill
-        experience_years = self.candidate_data.get('experience_years', 'N/A')
-        exp_pill = QLabel(f"💼 {experience_years} years exp")
-        exp_pill.setStyleSheet("""
-            QLabel {
-                background-color: rgba(255, 255, 255, 0.25);
-                color: white;
-                padding: 8px 16px;
-                border-radius: 16px;
-                font-size: 12px;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
-        """)
-        exp_pill.setFixedHeight(32)
-        
-        info_container.addWidget(matches_pill)
-        info_container.addWidget(exp_pill)
         info_container.addStretch()
         header_layout.addLayout(info_container)
         
@@ -342,11 +310,9 @@ class CVSummaryDialog(QDialog):
                 QFrame {
                     background-color: #f8f9fa;
                     border-radius: 8px;
+                    border: none;
                     padding: 0px;
                     margin-bottom: 8px;
-                }
-                QFrame:hover {
-                    background-color: #f1f3f4;
                 }
             """)
             
@@ -392,7 +358,7 @@ class CVSummaryDialog(QDialog):
             QFrame {
                 background-color: #f8f9fa;
                 border-radius: 12px;
-                border: 1px solid #e9ecef;
+                border: none;
             }
         """)
         
@@ -422,7 +388,7 @@ class CVSummaryDialog(QDialog):
         info_card.setStyleSheet("""
             QFrame {
                 background-color: white;
-                border: 1px solid #dee2e6;
+                border: none;
                 border-radius: 12px;
                 padding: 0px;
             }

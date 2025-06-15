@@ -6,6 +6,7 @@ from PyQt5.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, QRect
 from PyQt5.QtGui import QFont, QPainter, QPainterPath, QColor, QPixmap, QIcon
 
 from views.cv_summary_dialog import CVSummaryDialog
+from local_enum import KeywordResult
 
 class CardDetailDialog(QDialog):
     summary_requested = pyqtSignal(str)
@@ -84,6 +85,7 @@ class CardDetailDialog(QDialog):
                 font-size: 28px;
                 font-weight: 700;
                 letter-spacing: -0.5px;
+                background-color: transparent;
             }
         """)
         header_layout.addWidget(name_label)
@@ -202,12 +204,8 @@ class CardDetailDialog(QDialog):
         card.setStyleSheet("""
             QFrame {
                 background-color: white;
-                border: 1px solid #dee2e6;
                 border-radius: 8px;
                 padding: 0px;
-            }
-            QFrame:hover {
-                background-color: #f8f9fa;
             }
         """)
         
@@ -216,7 +214,7 @@ class CardDetailDialog(QDialog):
         card_layout.setSpacing(12)
         
         # Index number with gray circle background
-        index_label = QLabel(str(index))
+        index_label = QLabel(str(index + 1))
         index_label.setFixedSize(24, 24)
         index_label.setAlignment(Qt.AlignCenter)
         index_label.setStyleSheet("""
@@ -244,7 +242,16 @@ class CardDetailDialog(QDialog):
         """)
         
         occurrences = keyword_data["occurrence"]
-        occurrence_text = f"{occurrences} {'occurrence' if occurrences == 1 else 'occurrences'}"
+        occurrence_text = f"{occurrences} "
+
+        if occurrences > 0:
+            if keyword_data["type"] == KeywordResult.Exact:
+                occurrence_text += "exact "
+            elif keyword_data["type"] == KeywordResult.Similar:
+                occurrence_text += "similar "
+
+        occurrence_text += f"{'occurrence' if occurrences == 1 else 'occurrences'}"
+
         occurrence_label = QLabel(occurrence_text)
         occurrence_label.setStyleSheet("""
             QLabel {
