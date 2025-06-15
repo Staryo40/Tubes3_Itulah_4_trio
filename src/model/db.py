@@ -153,7 +153,7 @@ def get_stats():
 if __name__ == "__main__":
     print("Test koneksi database:", test_connection())
     print("Statistik:", get_stats())# IMPORT ENCRYPTION WRAPPER
-from .db_encryption_wrapper import (
+from .wrapper import (
     with_encryption, 
     encrypt_applicant_profile, 
     decrypt_applicant_profile,
