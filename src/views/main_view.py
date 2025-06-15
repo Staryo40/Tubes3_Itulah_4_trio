@@ -76,7 +76,7 @@ class MainView(QMainWindow):
         self.result_layout.setContentsMargins(margin, margin, margin, margin)
         self.result_layout.setSpacing(15)
 
-        self.welcome_label = QLabel("Welcome to CVSearch!")
+        self.welcome_label = QLabel("Welcome to CVMatcher!")
         self.welcome_label.setAlignment(Qt.AlignCenter)
         self.welcome_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.welcome_label.setWordWrap(True)
