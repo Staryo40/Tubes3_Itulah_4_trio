@@ -160,17 +160,17 @@ class MainView(QMainWindow):
         self.result_header_card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.result_header_card.setStyleSheet("""
             QFrame {
-                background-color: black;
+                background-color: transparent;
                 border-radius: 15px;
                 padding: 20px;
-                margin: 10px 0px;
+                margin: 0px 0px;
             }
         """)
         
         # Header card layout
         header_card_layout = QVBoxLayout(self.result_header_card)
         header_card_layout.setContentsMargins(20, 15, 20, 15)
-        header_card_layout.setSpacing(8)
+        header_card_layout.setSpacing(0)
         header_card_layout.setAlignment(Qt.AlignCenter)
         
         # Main title
@@ -180,7 +180,7 @@ class MainView(QMainWindow):
             QLabel {
                 font-size: 28px;
                 font-weight: bold;
-                color: #fff;
+                color: #000;
                 background-color: transparent;
                 border: none;
                 margin: 0px;
@@ -195,7 +195,7 @@ class MainView(QMainWindow):
         self.result_subtitle.setStyleSheet("""
             QLabel {
                 font-size: 14px;
-                color: #fff;
+                color: #808080;
                 background-color: transparent;
                 font-weight: 500;
                 margin: 0px;
@@ -740,22 +740,6 @@ class MainView(QMainWindow):
         card_layout.addLayout(keywords_preview_layout)
         card_layout.addStretch()
         
-        # Click instruction
-        click_label = QLabel("Click to view details")
-        click_label.setProperty("class", "click")
-        click_label.setAlignment(Qt.AlignCenter)
-        click_label.setStyleSheet(f"""
-            QLabel {{
-                font-size: {small_font_size}pt;
-                color: #888888;
-                font-style: italic;
-                padding: 8px 5px;
-                background-color: rgba(0,0,0,0.05);
-                border-radius: 6px;
-                margin-top: 5px;
-            }}
-        """)
-        card_layout.addWidget(click_label)
         
         return card
 

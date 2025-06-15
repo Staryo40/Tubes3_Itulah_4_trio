@@ -119,7 +119,7 @@ class CardDetailDialog(QDialog):
         content_layout.setContentsMargins(30, 25, 30, 20)
         content_layout.setSpacing(20)
         
-        keywords_title = QLabel("Matched Skills")
+        keywords_title = QLabel("Matched Keywords")
         keywords_title.setStyleSheet("""
             QLabel {
                 color: #495057;
